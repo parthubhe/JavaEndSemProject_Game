@@ -1,96 +1,104 @@
-// src/com/has/mt/screens/MainMenuScreen.java
 package com.has.mt.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.has.mt.AssetLoader;
-import com.has.mt.GameConfig;
-import com.has.mt.MyGdxGame;
-// Import other screens (Make sure these classes exist!)
-import com.has.mt.screens.GameScreen;
-import com.has.mt.screens.CharacterSelectionScreen; // Assuming this exists
+import com.has.mt.*;
+import com.has.mt.model.PlayerStats;
+import com.has.mt.screens.CharacterSelectionScreen;
+import java.util.List;
+import com.has.mt.interfaces.GameExceptionMessages;
 
 public class MainMenuScreen extends AbstractScreen {
 
+    private TextField usernameField;
+    private Table leaderboardTable;
+    private Skin skin;
+    private Preferences prefs;
+
     public MainMenuScreen(final MyGdxGame game) {
         super(game);
+        prefs = Gdx.app.getPreferences(GameConfig.PREFS_NAME);
     }
 
     @Override
     public void show() {
-        super.show(); // Sets input processor to the stage
+        super.show();
         Gdx.app.log("MainMenuScreen", "Showing Main Menu");
 
-        Skin skin = null;
-        // Robust skin loading
         try {
-            if (game.assetLoader.manager.isLoaded(AssetLoader.UI_SKIN_PATH)) {
+            // --- Robust Skin Loading ---
+            if (game.assetLoader != null && game.assetLoader.manager != null && game.assetLoader.manager.isLoaded(AssetLoader.UI_SKIN_PATH)) {
                 skin = game.assetLoader.get(AssetLoader.UI_SKIN_PATH, Skin.class);
             } else {
-                Gdx.app.error("MainMenuScreen", "Skin not loaded by AssetLoader. Path: " + AssetLoader.UI_SKIN_PATH);
-                // Attempt fallback sync load or direct load IF NEEDED, but ideally AssetLoader handles it.
-                try {
-                    skin = new Skin(Gdx.files.internal(AssetLoader.UI_SKIN_PATH)); // Fallback direct load
-                } catch (Exception fallbackEx) {
-                    Gdx.app.error("MainMenuScreen", "Fallback skin load failed!", fallbackEx);
+                Gdx.app.error("MainMenuScreen", "Skin not pre-loaded by AssetLoader! Attempting fallback load.");
+                // Ensure AssetLoader is used even for fallback if possible
+                if(game.assetLoader != null) {
+                    skin = game.assetLoader.get(AssetLoader.UI_SKIN_PATH, Skin.class); // This might throw if not loaded
+                } else {
+                    skin = new Skin(Gdx.files.internal(AssetLoader.UI_SKIN_PATH)); // Direct load as last resort
                 }
             }
         } catch (Exception e) {
-            Gdx.app.error("MainMenuScreen", "Error accessing/getting skin", e);
-        }
-
-        if (skin == null) {
-            Gdx.app.error("MainMenuScreen", "UI Skin is NULL. Cannot create UI.");
-            // Optional: Display an error message on screen using a default font?
-            // Or exit if UI is critical.
-            Gdx.app.exit(); // Exit if no skin available
+            Gdx.app.error("MainMenuScreen", GameExceptionMessages.SKIN_LOAD_FAILED, e);
+            Gdx.app.exit(); // Exit if skin is absolutely necessary and failed loading
             return;
         }
+        // Final check after attempts
+        if (skin == null) {
+            Gdx.app.error("MainMenuScreen", "Skin is NULL after loading attempts. Exiting.");
+            Gdx.app.exit();
+            return;
+        }
+        // --- End Robust Skin Loading ---
 
-        Table table = new Table();
-        table.setFillParent(true);
-        table.center();
 
-        Label titleLabel = new Label("Hack and Slash Game", skin); // Use default style
+        Table mainTable = new Table();
+        mainTable.setFillParent(true);
+        mainTable.pad(GameConfig.UI_PADDING * 2);
+        stage.addActor(mainTable); // Add main table to stage
+
+        // Left side: Title, Username, Buttons
+        Table leftTable = new Table();
+        leftTable.top(); // Align content to the top
+
+        Label titleLabel = new Label("Hack and Slash Game", skin, "title"); // Use "title" style if defined
         titleLabel.setAlignment(Align.center);
+        leftTable.add(titleLabel).padBottom(GameConfig.UI_PADDING * 5).colspan(2).center().expandX().fillX().row();
 
-        TextButton startButton = new TextButton("Start Game", skin);
-        TextButton charSelectButton = new TextButton("Select Character", skin);
+        // Username Input
+        Label userLabel = new Label("Username:", skin);
+        usernameField = new TextField(prefs.getString(GameConfig.PREF_KEY_USERNAME, ""), skin);
+        leftTable.add(userLabel).padRight(GameConfig.UI_PADDING);
+        leftTable.add(usernameField).width(250).padBottom(GameConfig.UI_PADDING * 2).row();
+
+
+        // Buttons
+        TextButton charSelectButton = new TextButton("Select Character & Play", skin);
         TextButton exitButton = new TextButton("Exit", skin);
-
-        // Listeners with dispose()
-        startButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("MainMenuScreen", "Start Game clicked");
-                String selectedCharacter = "LightningMage"; // Placeholder
-                try {
-                    GameScreen gameScreen = new GameScreen(game, selectedCharacter);
-                    game.setScreen(gameScreen);
-                    dispose(); // Dispose this screen AFTER setting the new one
-                } catch (Throwable t) { // Catch Throwable for more robust error logging
-                    Gdx.app.error("MainMenuScreen", "Failed to create/set GameScreen", t);
-                }
-            }
-        });
 
         charSelectButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("MainMenuScreen", "Character Select clicked");
+                String username = usernameField.getText().trim();
+                if (username.isEmpty()) {
+                    Gdx.app.log("MainMenuScreen", "Username is empty.");
+                    // TODO: Add a visual cue (e.g., shake the text field, show a small label)
+                    return;
+                }
+                Gdx.app.log("MainMenuScreen", "Character Select clicked for user: " + username);
+                prefs.putString(GameConfig.PREF_KEY_USERNAME, username); // Save username
+                prefs.flush();
                 try {
-                    CharacterSelectionScreen charScreen = new CharacterSelectionScreen(game);
-                    game.setScreen(charScreen);
-                    dispose(); // Dispose this screen AFTER setting the new one
-                } catch (Throwable t) { // Catch Throwable
+                    game.setScreen(new CharacterSelectionScreen(game, username));
+                    dispose();
+                } catch (Throwable t) { // Catch broader errors
                     Gdx.app.error("MainMenuScreen", "Failed to create/set CharacterSelectionScreen", t);
+                    // Optionally show an error dialog
                 }
             }
         });
@@ -103,31 +111,92 @@ public class MainMenuScreen extends AbstractScreen {
             }
         });
 
-        table.add(titleLabel).padBottom(GameConfig.UI_PADDING * 5).colspan(1).center().row();
-        table.add(startButton).width(300).pad(GameConfig.UI_PADDING).row();
-        table.add(charSelectButton).width(300).pad(GameConfig.UI_PADDING).row();
-        table.add(exitButton).width(300).pad(GameConfig.UI_PADDING).row();
+        // Add buttons below username field
+        leftTable.add(charSelectButton).width(300).pad(GameConfig.UI_PADDING).colspan(2).row();
+        leftTable.add(exitButton).width(300).pad(GameConfig.UI_PADDING).colspan(2).row();
 
-        stage.clear(); // Clear previous actors just in case show() is called multiple times
-        stage.addActor(table);
+        // Right side: Leaderboard
+        Table rightTable = new Table();
+        rightTable.top(); // Align content to the top
+
+        Label leaderboardTitle = new Label("Leaderboard (Top " + GameConfig.LEADERBOARD_SIZE + ")", skin);
+        rightTable.add(leaderboardTitle).padBottom(GameConfig.UI_PADDING * 2).expandX().center().row();
+
+        leaderboardTable = new Table(skin);
+        leaderboardTable.pad(GameConfig.UI_PADDING);
+        // Optional background/border can be added via skin:
+        // leaderboardTable.setBackground("some-drawable-name");
+
+        // Populate Leaderboard
+        populateLeaderboard();
+
+        ScrollPane scrollPane = new ScrollPane(leaderboardTable, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false); // Only allow vertical scrolling
+
+        rightTable.add(scrollPane).expand().fill().width(400); // Increase leaderboard width slightly
+
+
+        // Add left and right tables to main table
+        mainTable.add(leftTable).expandY().fillY().left().padRight(GameConfig.UI_PADDING * 5);
+        mainTable.add(rightTable).expandY().fillY().right();
+
+        // stage.setDebugAll(GameConfig.DEBUG_DRAW_BOXES); // Uncomment to debug layout
     }
+
+
+    private void populateLeaderboard() {
+        leaderboardTable.clearChildren(); // Clear previous entries
+        leaderboardTable.defaults().pad(GameConfig.UI_PADDING / 2).align(Align.left); // Align text left
+
+        // Header row
+        leaderboardTable.add(new Label("Rank", skin, "small")).padRight(10).align(Align.center);
+        leaderboardTable.add(new Label("Username", skin, "small")).expandX().fillX();
+        leaderboardTable.add(new Label("Score", skin, "small")).minWidth(80).align(Align.right);
+        leaderboardTable.row();
+        // --- Simple spacing instead of Separator ---
+        leaderboardTable.add().height(2).colspan(3).row();
+        // --- End spacing ---
+
+
+        try {
+            if (game.dbManager == null) {
+                throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "DatabaseManager is null in MainMenu");
+            }
+            List<PlayerStats> topPlayers = game.dbManager.getTopScores(GameConfig.LEADERBOARD_SIZE);
+
+            if (topPlayers == null || topPlayers.isEmpty()) {
+                leaderboardTable.add(new Label("No scores yet!", skin)).colspan(3).center().padTop(20).row();
+            } else {
+                int rank = 1;
+                for (PlayerStats stats : topPlayers) {
+                    if(stats == null) continue; // Skip null entries if DB query returned null somehow
+                    leaderboardTable.add(new Label(rank + ".", skin)).align(Align.center).padRight(10);
+                    leaderboardTable.add(new Label(stats.username, skin)).expandX().fillX(); // Allow username to take space
+                    leaderboardTable.add(new Label(String.valueOf(stats.highestScore), skin)).align(Align.right);
+                    leaderboardTable.row();
+                    rank++;
+                }
+            }
+        } catch (Exception e) {
+            Gdx.app.error("MainMenuScreen", "Failed to retrieve leaderboard data", e);
+            leaderboardTable.add(new Label("Error loading scores.", skin)).colspan(3).center().padTop(20).row();
+        }
+    }
+
 
     @Override
     public void render(float delta) {
-        // 1. Clear the screen
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // 2. Update and Draw the UI Stage
-        // The stage uses the UI camera/viewport set in AbstractScreen
-        stage.getViewport().apply(); // Apply the UI viewport
+        stage.getViewport().apply(); // Apply viewport before acting/drawing
         stage.act(delta);
         stage.draw();
     }
 
     @Override
     public void hide() {
-        super.hide(); // Clears input processor
+        super.hide();
         Gdx.app.log("MainMenuScreen", "Hiding Main Menu");
     }
 

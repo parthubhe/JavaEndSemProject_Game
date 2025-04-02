@@ -1,153 +1,162 @@
-// src/com/has/mt/managers/CollisionManager.java
 package com.has.mt.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
-// import com.badlogic.gdx.utils.Array; // Not directly used if iterating via managers
 import com.has.mt.GameConfig;
 import com.has.mt.gameobjects.Player;
 import com.has.mt.gameobjects.Enemy;
 import com.has.mt.gameobjects.Projectile;
-import com.has.mt.gameobjects.Character; // For Character states
+import com.has.mt.gameobjects.Character;
 
 public class CollisionManager {
 
     private Player player;
     private EnemyManager enemyManager;
     private ProjectileManager projectileManager;
-    // private LevelManager levelManager; // Needed for tilemap collisions
 
-    // Add safety checks in constructor
-    public CollisionManager(Player player, EnemyManager enemyManager, ProjectileManager projectileManager /*, LevelManager levelManager*/) {
-        if (player == null) {
-            Gdx.app.error("CollisionManager", "Cannot initialize with null player!");
-            // Optionally throw exception if critical
-        }
-        if (enemyManager == null) {
-            Gdx.app.error("CollisionManager", "Cannot initialize with null enemyManager!");
-        }
-        if (projectileManager == null) {
-            Gdx.app.error("CollisionManager", "Cannot initialize with null projectileManager!");
-        }
+    public CollisionManager(Player player, EnemyManager enemyManager, ProjectileManager projectileManager) {
+        if (player == null) { throw new IllegalArgumentException("Player cannot be null for CollisionManager"); }
+        if (enemyManager == null) { throw new IllegalArgumentException("EnemyManager cannot be null for CollisionManager"); }
+        if (projectileManager == null) { throw new IllegalArgumentException("ProjectileManager cannot be null for CollisionManager"); }
 
         this.player = player;
         this.enemyManager = enemyManager;
         this.projectileManager = projectileManager;
-        // this.levelManager = levelManager;
     }
 
     public void checkCollisions() {
-        // Check if essential components are null or player is dead
-        if (player == null || !player.isAlive() || enemyManager == null || projectileManager == null) {
-            return; // Cannot perform checks
-        }
+        if (player == null || enemyManager == null || projectileManager == null) return; // Check managers
 
+        // Check projectile collisions regardless of player state
+        checkProjectileCollisions();
+
+        // Only check player-involved collisions if player is valid and alive
+        if (!player.isAlive() || player.bounds == null) {
+            return;
+        }
         checkPlayerEnemyCollisions();
-        checkProjectileCollisions(); // Combined projectile checks
-        // checkCharacterWorldCollisions(); // Player and enemy vs level tiles
+
     }
 
     private void checkPlayerEnemyCollisions() {
-        Rectangle playerBounds = player.bounds;
-        if (playerBounds == null) return; // Safety check
+        Rectangle playerBounds = player.bounds; // Player validity checked in checkCollisions
 
-        // Iterate through active enemies safely
         if (enemyManager.getActiveEnemies() == null) return;
 
         for (Enemy enemy : enemyManager.getActiveEnemies()) {
-            if (enemy == null || !enemy.isAlive() || enemy.bounds == null || enemy.healthComponent == null) continue; // Safety checks
+            if (enemy == null || !enemy.isAlive() || enemy.bounds == null || enemy.healthComponent == null) continue;
 
             Rectangle enemyBounds = enemy.bounds;
 
             if (Intersector.overlaps(playerBounds, enemyBounds)) {
 
                 // --- Player attacking Enemy ---
-                // **** FIX: Use public getter isAttacking() ****
                 if (player.isAttacking()) {
-                    // ******************************************
-                    // Determine damage based on player attack state
-                    int damage = 0;
                     Character.State pState = player.getCurrentState();
-                    if (pState == Character.State.LIGHT_ATTACK) damage = GameConfig.LIGHT_ATTACK_DAMAGE;
-                    else if (pState == Character.State.HEAVY_ATTACK) damage = GameConfig.HEAVY_ATTACK_DAMAGE;
-                    else if (pState == Character.State.VADERSTRIKE) damage = GameConfig.HEAVY_ATTACK_DAMAGE * 2; // Example damage values
-
-                    // Check if enemy was recently hit (needs isRecentlyHit() method in HealthComponent or Enemy)
-                    // boolean enemyCanBeHit = !enemy.healthComponent.isRecentlyHit(); // Assuming method exists
-                    boolean enemyCanBeHit = true; // Placeholder - apply damage regardless for now
-
-                    if (damage > 0 && enemyCanBeHit) {
-                        // TODO: Refine with attack hitboxes, timing, and enemy invulnerability
-                        enemy.takeDamage(damage);
-                        // Gdx.app.log("CollisionManager", "Player ("+ pState +") hit Enemy. Enemy Health: " + enemy.healthComponent.getCurrentHealth());
+                    if (isMeleeAttackState(pState)) {
+                        int damage = getDamageForPlayerState(pState);
+                        if (damage > 0) {
+                            // TODO: Add player attack hitbox check here instead of just bounds overlap
+                            // TODO: Add enemy invulnerability check
+                            enemy.takeDamage(damage);
+                            // Gdx.app.debug("CollisionManager", "Player (" + pState + ") hit Enemy (" + enemy.getClass().getSimpleName() + "). Enemy Health: " + enemy.healthComponent.getCurrentHealth());
+                        }
                     }
                 }
 
                 // --- Enemy attacking Player ---
-                if (enemy.isAttacking()) {
-                    // Player's takeDamage() method handles invulnerability check
+                Character.State eState = enemy.getCurrentState();
+                // --- CHANGE START: Check damage dealt flag ---
+                // Check if enemy is in attack state AND hasn't dealt damage in this specific attack instance yet
+                if (enemy.isAttacking() && isMeleeAttackState(eState) && !enemy.hasDealtDamageThisAttack()) {
+                    // Player invulnerability is handled within player.takeDamage
                     player.takeDamage(enemy.getAttackDamage());
-                    // Log is handled within Player.takeDamage() if implemented there
-                    // Gdx.app.log("CollisionManager", "Enemy potentially hit Player.");
+                    // Mark that this enemy attack instance has now dealt its damage
+                    enemy.markDamageDealtThisAttack();
+                    Gdx.app.debug("CollisionManager", "Enemy (" + enemy.getClass().getSimpleName() + "/" + eState + ") dealt damage to Player. Player Health: " + player.healthComponent.getCurrentHealth());
                 }
+                // --- CHANGE END ---
             }
         }
     }
 
-    // Combined projectile checks
+    // Combined projectile checks (no changes needed here for the instant death issue)
     private void checkProjectileCollisions() {
-        if (projectileManager.getActiveProjectiles() == null) return;
+        checkProjectileEnemyCollisions();
+        // Only check vs player if player is alive
+        if (player != null && player.isAlive() && player.bounds != null) {
+            checkProjectilePlayerCollisions();
+        }
+    }
 
-        // Iterate backwards for safe removal if projectiles become inactive during loop
+    private void checkProjectileEnemyCollisions() {
+        if (projectileManager.getActiveProjectiles() == null || enemyManager.getActiveEnemies() == null) return;
+
         for (int i = projectileManager.getActiveProjectiles().size - 1; i >= 0; i--) {
             Projectile projectile = projectileManager.getActiveProjectiles().get(i);
-
-            // Initial projectile checks
-            if (projectile == null || !projectile.isActive() || projectile.bounds == null) continue;
+            // Check owner is Player
+            if (projectile == null || !projectile.isActive() || projectile.bounds == null || !(projectile.getOwner() instanceof Player)) {
+                continue;
+            }
 
             Rectangle projectileBounds = projectile.bounds;
-            Character owner = projectile.getOwner(); // Get owner once
 
-            // --- Projectile vs Enemy (if shot by player) ---
-            if (owner == player) {
-                if (enemyManager.getActiveEnemies() == null) continue; // Check enemy list exists
+            for (Enemy enemy : enemyManager.getActiveEnemies()) {
+                if (enemy == null || !enemy.isAlive() || enemy.bounds == null || enemy.healthComponent == null) continue;
 
-                for (Enemy enemy : enemyManager.getActiveEnemies()) {
-                    if (enemy == null || !enemy.isAlive() || enemy.bounds == null || enemy.healthComponent == null) continue;
-
-                    // boolean enemyCanBeHit = !enemy.healthComponent.isRecentlyHit(); // Check enemy invulnerability
-                    boolean enemyCanBeHit = true; // Placeholder
-
-                    if (enemyCanBeHit && Intersector.overlaps(projectileBounds, enemy.bounds)) {
-                        enemy.takeDamage(projectile.getDamage());
-                        projectile.setActive(false); // Deactivate projectile
-                        Gdx.app.log("CollisionManager", "Player Projectile hit Enemy. Enemy Health: " + enemy.healthComponent.getCurrentHealth());
-                        break; // Projectile hits one enemy and disappears
-                    }
-                }
-            }
-            // --- Projectile vs Player (if shot by enemy) ---
-            else if (owner instanceof Enemy) { // Check owner type
-                if (player.bounds != null && Intersector.overlaps(projectileBounds, player.bounds)) {
-                    // Player's takeDamage() handles invulnerability check
-                    player.takeDamage(projectile.getDamage());
+                if (Intersector.overlaps(projectileBounds, enemy.bounds)) {
+                    enemy.takeDamage(projectile.getDamage());
                     projectile.setActive(false); // Deactivate projectile on hit
-                    // Log moved to Player.takeDamage()
+                    Gdx.app.debug("CollisionManager", "Player Projectile hit Enemy (" + enemy.getClass().getSimpleName() + "). Enemy Health: " + enemy.healthComponent.getCurrentHealth());
+                    break;
                 }
             }
+        }
+    }
 
-            // If projectile is now inactive after checks, no need to check further against others in this frame
-            if (!projectile.isActive()) {
-                // Projectile might be removed from list by ProjectileManager.update() later,
-                // but setting active=false prevents further collisions this frame.
+    private void checkProjectilePlayerCollisions() {
+        // Player validity checked before calling this method
+        if (projectileManager.getActiveProjectiles() == null) return;
+
+        Rectangle playerBounds = player.bounds;
+
+        for (int i = projectileManager.getActiveProjectiles().size - 1; i >= 0; i--) {
+            Projectile projectile = projectileManager.getActiveProjectiles().get(i);
+            // Check owner is Enemy
+            if (projectile == null || !projectile.isActive() || projectile.bounds == null || !(projectile.getOwner() instanceof Enemy)) {
                 continue;
+            }
+
+            Rectangle projectileBounds = projectile.bounds;
+
+            if (Intersector.overlaps(projectileBounds, playerBounds)) {
+                player.takeDamage(projectile.getDamage()); // Player handles invulnerability
+                projectile.setActive(false);
+                Gdx.app.debug("CollisionManager", "Enemy Projectile hit Player. Player Health: " + player.healthComponent.getCurrentHealth());
             }
         }
     }
 
 
-    // private void checkCharacterWorldCollisions() {
-    //    // Implementation for checking collisions with map tiles
-    // }
+    private boolean isMeleeAttackState(Character.State state) {
+        if(state == null) return false;
+        return state == Character.State.LIGHT_ATTACK ||
+            state == Character.State.HEAVY_ATTACK ||
+            state == Character.State.ATTACK1 ||
+            state == Character.State.ATTACK2 ||
+            state == Character.State.ATTACK3 ||
+            state == Character.State.VADERSTRIKE; // Example list
+    }
+
+    private int getDamageForPlayerState(Character.State state) {
+        if(state == null) return 0;
+        switch(state) {
+            case LIGHT_ATTACK: return GameConfig.LIGHT_ATTACK_DAMAGE;
+            case HEAVY_ATTACK: return GameConfig.HEAVY_ATTACK_DAMAGE;
+            case ATTACK3: return GameConfig.HEAVY_ATTACK_DAMAGE + 5; // Example
+            case VADERSTRIKE: return GameConfig.HEAVY_ATTACK_DAMAGE * 2; // Example
+            default: return 0;
+        }
+    }
 }

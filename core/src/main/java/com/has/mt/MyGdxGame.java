@@ -1,11 +1,11 @@
-// src/com/has/mt/MyGdxGame.java
 package com.has.mt;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.has.mt.screens.MainMenuScreen; // Assuming MainMenuScreen is created
+import com.has.mt.interfaces.GameExceptionMessages; // Import messages
+import com.has.mt.screens.MainMenuScreen;
 
 public class MyGdxGame extends Game {
     public SpriteBatch batch;
@@ -19,14 +19,31 @@ public class MyGdxGame extends Game {
         shapeRenderer = new ShapeRenderer();
         assetLoader = new AssetLoader();
 
-        // Start loading assets immediately (can add a loading screen later)
-        assetLoader.load();
-        // Crucial: Block until loading is complete for this basic example
-        assetLoader.manager.finishLoading();
+        try {
+            // Start loading INITIAL assets immediately
+            assetLoader.loadInitialAssets();
+            // Block until initial loading is complete (UI skin, common assets)
+            // Specific player assets are loaded later.
+            Gdx.app.log("MyGdxGame", "Waiting for initial assets to load...");
+            assetLoader.manager.finishLoading(); // Finish loading UI, enemies, previews etc.
+            Gdx.app.log("MyGdxGame", "Initial assets loaded.");
 
-        dbManager = DatabaseManager.getInstance(); // Initialize DB
+            // Initialize DB AFTER assets potentially needed by DB error handling (like fonts/UI) are loaded
+            dbManager = DatabaseManager.getInstance();
 
-        Gdx.app.log("MyGdxGame", "Assets Loaded. Starting Main Menu.");
+        } catch (GameLogicException e) {
+            Gdx.app.error("MyGdxGame", "Critical error during initialization!", e);
+            // Handle critical failure - maybe display an error message screen or exit
+            // For now, just exit
+            Gdx.app.exit();
+            return; // Stop further execution
+        } catch (Exception e) { // Catch any other unexpected exceptions
+            Gdx.app.error("MyGdxGame", "Unexpected critical error during initialization!", e);
+            Gdx.app.exit();
+            return;
+        }
+
+        Gdx.app.log("MyGdxGame", "Initialization Complete. Starting Main Menu.");
         // Set the first screen (e.g., Main Menu)
         this.setScreen(new MainMenuScreen(this));
     }
@@ -40,13 +57,15 @@ public class MyGdxGame extends Game {
     public void dispose() {
         Gdx.app.log("MyGdxGame", "Disposing Game Resources.");
         if (screen != null) {
-            screen.dispose();
+            screen.dispose(); // Dispose the current screen first
         }
-        batch.dispose();
-        shapeRenderer.dispose();
-        assetLoader.dispose();
+        // Dispose shared resources
+        if (batch != null) batch.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (assetLoader != null) assetLoader.dispose();
         if (dbManager != null) {
             dbManager.close(); // Close DB connection
         }
+        Gdx.app.log("MyGdxGame", "Game Dispose Finished.");
     }
 }

@@ -1,4 +1,3 @@
-// src/com/has/mt/components/StateComponent.java
 package com.has.mt.components;
 
 import com.badlogic.gdx.Gdx;
@@ -9,6 +8,10 @@ public class StateComponent {
     private State previousState;
 
     public StateComponent(State initialState) {
+        if(initialState == null) {
+            Gdx.app.error("StateComponent", "Attempted to initialize with null state! Defaulting to IDLE.");
+            initialState = State.IDLE;
+        }
         this.currentState = initialState;
         this.previousState = initialState;
     }
@@ -21,8 +24,7 @@ public class StateComponent {
         if (this.currentState != newState) {
             this.previousState = this.currentState;
             this.currentState = newState;
-            // Optional: Log state changes for debugging
-            // Gdx.app.log("StateComponent", "State changed from " + previousState + " to " + currentState);
+            // Gdx.app.debug("StateComponent", "State changed from " + previousState + " to " + currentState); // Log state changes for debugging
         }
     }
 
@@ -35,6 +37,7 @@ public class StateComponent {
     }
 
     public boolean isState(State state) {
+        if(state == null) return false; // Cannot be in a null state
         return this.currentState == state;
     }
 }

@@ -1,4 +1,3 @@
-// src/com/has/mt/components/PhysicsComponent.java
 package com.has.mt.components;
 
 import com.badlogic.gdx.math.Vector2;
@@ -11,10 +10,15 @@ public class PhysicsComponent {
     private float gravity = GameConfig.GRAVITY;
 
     public PhysicsComponent(Character character) {
+        if (character == null) {
+            throw new IllegalArgumentException("Character cannot be null for PhysicsComponent");
+        }
         this.character = character;
     }
 
     public void update(float delta) {
+        if (character.velocity == null || character.position == null || character.bounds == null) return; // Safety check
+
         // Apply gravity if not on ground (or if velocity is upward)
         if (!onGround || character.velocity.y > 0) {
             character.velocity.y += gravity * delta;
@@ -25,7 +29,6 @@ public class PhysicsComponent {
         character.position.y += character.velocity.y * delta;
 
         // Check for ground collision (simple version)
-        // TODO: Replace with proper collision detection (Tilemap, CollisionManager)
         if (character.position.y <= GameConfig.GROUND_Y) {
             character.position.y = GameConfig.GROUND_Y;
             if (character.velocity.y < 0) { // Only stop if moving downwards
@@ -37,16 +40,15 @@ public class PhysicsComponent {
         }
 
         // Update bounds position AFTER position update
-        // Width/Height are updated in Character.render based on animation frame
+        // Character.render should update width/height
         character.bounds.setPosition(character.position.x, character.position.y);
-
-        // TODO: Add world boundary checks? Wall collisions?
     }
 
     public void jump(float jumpVelocity) {
         if (onGround) {
+            if (character.velocity == null) return; // Safety check
             character.velocity.y = jumpVelocity;
-            onGround = false; // Immediately leave ground state
+            onGround = false;
         }
     }
 
@@ -55,6 +57,6 @@ public class PhysicsComponent {
     }
 
     public void reset() {
-        onGround = false; // Re-evaluate on next update
+        onGround = false;
     }
 }

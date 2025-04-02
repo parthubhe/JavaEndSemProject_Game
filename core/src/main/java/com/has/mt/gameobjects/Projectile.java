@@ -1,7 +1,6 @@
-// src/com/has/mt/gameobjects/Projectile.java
 package com.has.mt.gameobjects;
 
-import com.badlogic.gdx.Gdx; // **** ADDED IMPORT ****
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +10,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 import com.has.mt.AssetLoader;
 import com.has.mt.GameConfig;
+import com.has.mt.GameLogicException; // Import
+import com.has.mt.interfaces.GameExceptionMessages; // Import
 import com.has.mt.utils.AnimationLoader;
 
 public class Projectile implements Disposable {
@@ -27,10 +28,13 @@ public class Projectile implements Disposable {
     private Animation<TextureRegion> animation;
     private float stateTime = 0f;
     private float scale = 2.0f; // Scale for the projectile visual
-    private Texture texture; // Keep ref ONLY if loaded DIRECTLY here, not via AssetLoader.get()
+
 
     public Projectile(AssetLoader assetLoader, float x, float y, float vx, float vy, int damage, Character owner,
                       String animPath, int cols, int rows, float frameDuration) {
+        if(assetLoader == null) throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "AssetLoader in Projectile");
+        if(owner == null) Gdx.app.error("Projectile", "Projectile created with null owner!"); // Allow null owner? Log error.
+
         this.position = new Vector2(x, y);
         this.velocity = new Vector2(vx, vy);
         this.damage = damage;
@@ -38,22 +42,17 @@ public class Projectile implements Disposable {
         this.bounds = new Rectangle(x, y, 0, 0); // Updated in render
 
         try {
-            // Get texture from AssetLoader - DO NOT store ref here if AssetLoader manages it
-            Texture projectileTexture = assetLoader.get(animPath, Texture.class);
-            if (projectileTexture == null) {
-                throw new RuntimeException("Projectile texture failed to load from AssetLoader: " + animPath);
-            }
+            Texture projectileTexture = assetLoader.get(animPath, Texture.class); // Will throw if fails now
             this.animation = AnimationLoader.createAnimation(projectileTexture, cols, rows, frameDuration);
             this.animation.setPlayMode(Animation.PlayMode.LOOP); // Projectiles usually loop
 
-            // Set initial bounds based on first frame
             TextureRegion frame = animation.getKeyFrame(0);
             bounds.width = frame.getRegionWidth() * scale;
             bounds.height = frame.getRegionHeight() * scale;
 
         } catch (Exception e) {
             Gdx.app.error("Projectile", "Failed to load animation: " + animPath, e);
-            active = false;
+            active = false; // Deactivate if creation failed
         }
     }
 
@@ -62,7 +61,7 @@ public class Projectile implements Disposable {
 
         lifeTimer += delta;
         if (lifeTimer >= lifeSpan) {
-            active = false;
+            setActive(false); // Use setter to log deactivation
             return;
         }
 
@@ -75,16 +74,17 @@ public class Projectile implements Disposable {
     }
 
     public void render(SpriteBatch batch) {
-        if (!active || animation == null) return;
+        if (!active || animation == null || batch == null) return;
 
         TextureRegion currentFrame = animation.getKeyFrame(stateTime);
-        if (currentFrame == null) return; // Safety check
+        if (currentFrame == null) return;
 
         float frameWidth = currentFrame.getRegionWidth() * scale;
         float frameHeight = currentFrame.getRegionHeight() * scale;
 
-        bounds.width = frameWidth;
-        bounds.height = frameHeight;
+        // Update bounds size every frame in case animation size changes? Usually not needed for projectiles.
+        // bounds.width = frameWidth;
+        // bounds.height = frameHeight;
 
         batch.draw(currentFrame, position.x, position.y, frameWidth, frameHeight);
     }
@@ -95,7 +95,7 @@ public class Projectile implements Disposable {
 
     public void setActive(boolean active) {
         if (this.active && !active) { // Log only when changing from active to inactive
-            Gdx.app.log("Projectile", "Projectile deactivated.");
+            Gdx.app.debug("Projectile", "Projectile deactivated.");
         }
         this.active = active;
     }
@@ -111,7 +111,6 @@ public class Projectile implements Disposable {
     @Override
     public void dispose() {
         // Texture is managed by AssetLoader, DO NOT dispose here.
-        // Clear references if needed
-        animation = null;
+        animation = null; // Clear reference
     }
 }

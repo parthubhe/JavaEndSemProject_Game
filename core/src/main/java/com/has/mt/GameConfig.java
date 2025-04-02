@@ -1,4 +1,3 @@
-// src/com/has/mt/GameConfig.java
 package com.has.mt;
 
 public class GameConfig {
@@ -21,13 +20,16 @@ public class GameConfig {
     public static final float ENEMY_SCALE = 2.5f; // Visual scale factor for standard enemies
     public static final float ENEMY_DETECT_RANGE = 400f;
     public static final float ENEMY_ATTACK_RANGE = 80f;
+    public static final int ENEMY_KILL_SCORE = 100; // Score per enemy kill
+    public static final int WIN_SCORE = 5000;      // Score required to win
+
 
     // Projectiles
     public static final float PROJECTILE_SPEED = 600f;
     public static final float PROJECTILE_LIFESPAN = 3.0f; // Seconds before auto-despawn
 
     // Debugging
-    public static final boolean DEBUG_DRAW_BOXES = true; // Draw collision boxes
+    public static final boolean DEBUG_DRAW_BOXES = false; // Draw collision boxes (Set to false for release)
     public static final boolean DEBUG_DRAW_PATHS = false; // Draw AI paths (if implemented)
 
     // Level/Background
@@ -36,15 +38,19 @@ public class GameConfig {
     public static final float FLOOR_TILE_SCALE = 3.0f; // Visual scale of floor tiles
 
     // UI
-    public static final float UI_PADDING = 10f;
+    public static final float UI_PADDING = 15f; // Increased padding slightly
 
     // Add other constants as needed (damage values, cooldowns, etc.)
     public static final int LIGHT_ATTACK_DAMAGE = 15;
     public static final int HEAVY_ATTACK_DAMAGE = 25;
-    public static final int PROJECTILE_DAMAGE = 10;
+    public static final int PROJECTILE_DAMAGE = 10; // Base projectile damage
     public static final float ATTACK_COOLDOWN = 0.5f; // Basic cooldown
     public static final float ENEMY_ATTACK_COOLDOWN = 1.5f;
     public static final int ENEMY_BASE_DAMAGE = 10;
 
-    public static final String DEFAULT_PLAYER_NAME = "Player1"; // For Database
+    public static final int LEADERBOARD_SIZE = 5; // How many entries to show
+    public static final String PREFS_NAME = "GamePreferences"; // Preferences file name
+    public static final String PREF_KEY_USERNAME = "lastUsername";
+    public static final String PREF_KEY_SELECTED_CHAR = "selectedCharacter";
+
 }

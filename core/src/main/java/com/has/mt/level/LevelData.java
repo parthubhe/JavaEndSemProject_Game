@@ -1,19 +1,22 @@
-// src/com/has/mt/level/LevelData.java
 package com.has.mt.level;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.has.mt.level.background.ParallaxLayerData; // Needs class
+// --- CHANGE START ---
+// ParallaxLayerData is currently unused by ParallaxBackground constructor, but keep class if needed elsewhere
+import com.has.mt.level.background.ParallaxLayerData;
+// --- CHANGE END ---
 
-// Simple data class to hold level definition
+
 public class LevelData {
     public String levelName;
-    public String backgroundTheme; // e.g., "Winter", "Castle"
-    public int backgroundVariant;  // e.g., 1 for "winter 1", 2 for "winter 2"
-    public Array<ParallaxLayerData> backgroundLayers; // Data for parallax
-    public int floorTileIndex;     // Index for the floor texture
-    public Array<SpawnPoint> spawnPoints; // Enemy spawn definitions
-    public float levelWidth; // Optional: total width of the level area
-    public Vector2 playerStartPos; // Where the player starts in this level
+    public String backgroundTheme;
+    public int backgroundVariant;
+    @Deprecated // Not currently used by ParallaxBackground constructor
+    public Array<ParallaxLayerData> backgroundLayers; // Data for parallax (Keep for potential future use)
+    public int floorTileIndex;
+    public Array<SpawnPoint> spawnPoints;
+    public float levelWidth;
+    public Vector2 playerStartPos;
 
     public LevelData() {
         backgroundLayers = new Array<>();

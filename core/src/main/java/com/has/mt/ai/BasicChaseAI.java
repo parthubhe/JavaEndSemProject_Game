@@ -1,4 +1,3 @@
-// src/com/has/mt/ai/BasicChaseAI.java
 package com.has.mt.ai;
 
 import com.badlogic.gdx.Gdx;
@@ -13,8 +12,8 @@ public class BasicChaseAI implements EnemyAI {
 
     protected Enemy enemy;
     protected Character target;
-    protected float moveSpeed = 150f; // Base speed for this AI
-    protected float runSpeed = 250f; // Speed when chasing actively
+    public float moveSpeed = 150f; // Base speed for this AI
+    public float runSpeed = 250f; // Speed when chasing actively
 
     public BasicChaseAI(Enemy enemy) {
         this.enemy = enemy;
@@ -28,10 +27,9 @@ public class BasicChaseAI implements EnemyAI {
 
     @Override
     public void update(float delta) {
-        if (enemy == null || !enemy.isAlive() || target == null || !target.isAlive()) {
-            // If no target or enemy/target is dead, just idle
-            enemy.velocity.x = 0;
-            if (enemy.physicsComponent.isOnGround() && !enemy.stateComponent.isState(State.HURT)) {
+        if (enemy == null || !enemy.isAlive() || target == null || !target.isAlive() || enemy.stateComponent == null || enemy.physicsComponent == null || enemy.velocity == null) { // Added null checks
+            if(enemy != null && enemy.velocity != null) enemy.velocity.x = 0;
+            if (enemy != null && enemy.stateComponent != null && enemy.physicsComponent != null && enemy.physicsComponent.isOnGround() && !enemy.stateComponent.isState(State.HURT)) {
                 enemy.stateComponent.setState(State.IDLE);
             }
             return;
@@ -91,7 +89,7 @@ public class BasicChaseAI implements EnemyAI {
     @Override
     public void drawDebug(ShapeRenderer shapeRenderer) {
         // Draw line to target if debugging AI paths
-        if (GameConfig.DEBUG_DRAW_PATHS && target != null && enemy != null) {
+        if (GameConfig.DEBUG_DRAW_PATHS && target != null && enemy != null && enemy.bounds != null && target.bounds != null) { // Added null checks
             shapeRenderer.setColor(1, 0, 1, 1); // Magenta for AI line
             shapeRenderer.line(enemy.position.x + enemy.bounds.width / 2,
                 enemy.position.y + enemy.bounds.height / 2,

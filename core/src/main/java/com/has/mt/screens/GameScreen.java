@@ -1,240 +1,425 @@
-// src/com/has/mt/screens/GameScreen.java
 package com.has.mt.screens;
 
-// --- FIX: Add necessary imports ---
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector3; // Import Vector3 for lerp
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.has.mt.AssetLoader; // Import AssetLoader
-import com.has.mt.GameConfig; // Import GameConfig
-import com.has.mt.MyGdxGame; // Import MyGdxGame
-import com.has.mt.managers.*; // Import all managers
-import com.has.mt.gameobjects.Player; // Import Player
-import com.has.mt.gameobjects.Character; // Import Character for State enum
-import com.has.mt.gameobjects.players.*; // Import player implementations
-import com.has.mt.level.*; // Import Level, LevelData, LevelManager
-import com.has.mt.ui.*; // Import UIManager
-import com.has.mt.utils.DebugUtils; // Import DebugUtils
+import com.has.mt.*;
+import com.has.mt.managers.*;
+import com.has.mt.gameobjects.Player;
+import com.has.mt.gameobjects.Character;
+import com.has.mt.gameobjects.players.*;
+import com.has.mt.level.*;
+import com.has.mt.ui.*;
+import com.has.mt.utils.DebugUtils;
 import com.badlogic.gdx.graphics.Color;
-// ---------------------------------
+import com.has.mt.interfaces.GameExceptionMessages;
+
 
 public class GameScreen extends AbstractScreen {
 
-    // Game World Camera & Viewport
     private OrthographicCamera gameCamera;
     private Viewport gameViewport;
-
-    // Managers
     private LevelManager levelManager;
-    private Player player; // Use the specific Player type after creation
+    private Player player;
     private EnemyManager enemyManager;
     private ProjectileManager projectileManager;
     private CollisionManager collisionManager;
     private UIManager uiManager;
+    private final String selectedCharacterType;
+    private final String username;
+    private int score = 0;
+    private int totalKillsThisGame = 0;
+    private boolean gameIsOver = false;
 
-    // State
-    private String selectedCharacterType;
+    public GameScreen(final MyGdxGame game, String selectedCharacterType, String username) {
+        super(game);
+        this.selectedCharacterType = selectedCharacterType;
+        this.username = username;
+        Gdx.app.log("GameScreen", "Initializing for User: " + username + ", Character: " + selectedCharacterType);
 
-    public GameScreen(final MyGdxGame game, String selectedCharacterType) {
-        super(game); // Initializes uiCamera, uiViewport, stage from AbstractScreen
-        this.selectedCharacterType = selectedCharacterType; // Store selected type
-
-        // 1. Init Game World Camera/Viewport
-        gameCamera = new OrthographicCamera();
-        gameViewport = new FitViewport(GameConfig.V_WIDTH, GameConfig.V_HEIGHT, gameCamera);
-
-        // 2. Init Managers (Order matters)
-        // Ensure AssetLoader is passed correctly from 'game' instance
-        levelManager = new LevelManager(game.assetLoader);
-        projectileManager = new ProjectileManager();
-        // Ensure DatabaseManager instance is accessible via 'game' or passed separately
-        enemyManager = new EnemyManager(game.assetLoader, game.dbManager);
-        // Ensure stage (from AbstractScreen) is passed correctly
-        uiManager = new UIManager(game.assetLoader, stage);
-
-        // 3. Init Player
-        createPlayer(); // This sets the 'player' field
-        if (player == null) {
-            Gdx.app.error("GameScreen", "Player creation failed! Returning to Main Menu.");
-            // Use the 'game' instance passed to the constructor to change screen
+        // Asset loading verification
+        try {
+            if (!checkPlayerAssetsLoaded(selectedCharacterType)) {
+                Gdx.app.log("GameScreen", "Player assets not loaded before entering GameScreen. Attempting synchronous load for: " + selectedCharacterType);
+                game.assetLoader.loadPlayerAssets(selectedCharacterType);
+                game.assetLoader.manager.finishLoading();
+                if (!checkPlayerAssetsLoaded(selectedCharacterType)){
+                    throw new GameLogicException("Required player assets failed to load for: " + selectedCharacterType);
+                }
+                Gdx.app.log("GameScreen", "Synchronous player asset load successful.");
+            }
+        } catch (GameLogicException e) {
+            Gdx.app.error("GameScreen", "Initialization failed! " + e.getMessage());
+            game.setScreen(new MainMenuScreen(game)); // Go back to main menu
+            dispose(); // Clean up partially initialized screen
+            return;
+        } catch (Exception e) { // Catch unexpected errors during asset loading/checking
+            Gdx.app.error("GameScreen", "Unexpected error during asset check/load!", e);
             game.setScreen(new MainMenuScreen(game));
-            dispose(); // Clean up this screen's resources
+            dispose();
             return;
         }
 
-        // 4. Init remaining Managers that depend on Player
-        // Ensure CollisionManager constructor is correct
-        collisionManager = new CollisionManager(player, enemyManager, projectileManager);
-        enemyManager.setPlayerTarget(player); // Set target for existing/future enemies
+        // Initialize Camera & Viewport
+        gameCamera = new OrthographicCamera();
+        gameViewport = new FitViewport(GameConfig.V_WIDTH, GameConfig.V_HEIGHT, gameCamera);
 
-        // 5. Load Level (after Player exists so it can be positioned)
-        levelManager.loadLevel(0, player, enemyManager);
+        // Initialize Managers (order can matter)
+        try {
+            levelManager = new LevelManager(game.assetLoader);
+            projectileManager = new ProjectileManager();
+            enemyManager = new EnemyManager(game.assetLoader); // Pass DB manager if needed later
+            uiManager = new UIManager(game.assetLoader, stage); // Stage is from AbstractScreen
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Failed to initialize core managers!", e);
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+            return;
+        }
 
-        // 6. Setup HUD (after Player exists)
-        uiManager.createHUD(player);
+        // Initialize Player
+        try {
+            createPlayer(); // Creates and sets the 'player' instance
+            if (player == null) {
+                // createPlayer should throw if it fails, but double-check
+                throw new GameLogicException("Player object is null after creation attempt for type: " + selectedCharacterType);
+            }
+        } catch(Exception e) {
+            Gdx.app.error("GameScreen", "Player creation failed!", e);
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+            return;
+        }
 
-        // 7. Initial Camera Position (set after Player is positioned by level load)
-        gameCamera.position.set(player.position.x, GameConfig.V_HEIGHT / 2f, 0);
-        gameCamera.update();
+        // Initialize dependent managers
+        try {
+            collisionManager = new CollisionManager(player, enemyManager, projectileManager);
+            enemyManager.setPlayerTarget(player); // Set target *after* player is created
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Failed to initialize collision manager or set enemy target!", e);
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+            return;
+        }
 
-        Gdx.app.log("GameScreen", "Initialization Complete");
+
+        // Load Level
+        try {
+            boolean levelLoaded = levelManager.loadLevel(0, player, enemyManager); // Load initial level
+            if (!levelLoaded) {
+                throw new GameLogicException(GameExceptionMessages.LEVEL_DATA_INVALID, "Failed to load initial level 0");
+            }
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Failed to load initial level!", e);
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+            return;
+        }
+
+
+        // Setup HUD
+        if (uiManager != null && player != null) {
+            try {
+                uiManager.createHUD(player, username);
+            } catch (Exception e) {
+                Gdx.app.error("GameScreen", "Failed to create HUD!", e);
+                // Continue game without HUD? Or go back? Decide based on importance.
+            }
+        } else {
+            Gdx.app.error("GameScreen", "UIManager or Player is null, cannot create HUD.");
+        }
+
+        // Initial Camera Position
+        if (player != null && player.position != null) {
+            gameCamera.position.set(player.position.x, GameConfig.V_HEIGHT / 2f, 0);
+            gameCamera.update();
+        } else {
+            Gdx.app.error("GameScreen", "Player or player position is null after init, cannot set camera.");
+        }
+
+        Gdx.app.log("GameScreen", "Initialization Complete for " + username);
+    }
+
+    private boolean checkPlayerAssetsLoaded(String playerType) {
+        // Make sure playerAssetPaths itself isn't null
+        if (game.assetLoader == null || game.assetLoader.playerAssetPaths == null) {
+            Gdx.app.error("AssetCheck", "AssetLoader or playerAssetPaths map is null!");
+            return false;
+        }
+
+        Array<String> paths = game.assetLoader.playerAssetPaths.get(playerType);
+        if (paths == null || paths.isEmpty()) {
+            Gdx.app.error("AssetCheck", "No paths defined for player type: " + playerType);
+            return false;
+        }
+        // Determine idle path more robustly
+        String idlePath = null;
+        switch (playerType) {
+            case "Knight_1": idlePath = AssetLoader.KNIGHT_IDLE_PATH; break;
+            case "LightningMage": idlePath = AssetLoader.MAGE_IDLE_PATH; break;
+            case "FireWizard": idlePath = AssetLoader.FIRE_WIZARD_IDLE_PATH; break;
+            case "WandererMage": idlePath = AssetLoader.WANDERER_MAGE_IDLE_PATH; break;
+            case "Samurai": idlePath = AssetLoader.SAMURAI_IDLE_PATH; break;
+            case "SamuraiArcher": idlePath = AssetLoader.SAMURAI_ARCHER_IDLE_PATH; break;
+            case "SamuraiCommander": idlePath = AssetLoader.SAMURAI_COMMANDER_IDLE_PATH; break;
+            // Add other specific cases if needed
+        }
+        // If no specific case matched, try finding the one ending in "Idle.png"
+        if (idlePath == null) {
+            for(String path : paths) {
+                if(path != null && path.endsWith("Idle.png")) {
+                    idlePath = path;
+                    break;
+                }
+            }
+        }
+        // Fallback to first path if no idle found
+        if (idlePath == null) {
+            idlePath = paths.first();
+            Gdx.app.log("AssetCheck", "Could not determine specific idle path for " + playerType + ", checking first path: " + idlePath);
+        }
+
+        if (idlePath == null || !game.assetLoader.manager.isLoaded(idlePath, Texture.class)) {
+            Gdx.app.error("AssetCheck", "Core asset not loaded for " + playerType + ": " + (idlePath != null ? idlePath : "path not found"));
+            return false;
+        }
+        Gdx.app.debug("AssetCheck", "Core assets seem loaded for: " + playerType);
+        return true;
     }
 
     private void createPlayer() {
-        // Default start position
-        float startX = GameConfig.V_WIDTH / 4f; // Use V_WIDTH from GameConfig
-        float startY = GameConfig.GROUND_Y; // Use GROUND_Y from GameConfig
-
-        // Try to get start pos from level if loaded (LevelData should be accessible)
+        float startX = GameConfig.V_WIDTH / 4f;
+        float startY = GameConfig.GROUND_Y;
         if (levelManager != null && levelManager.getCurrentLevel() != null) {
-            LevelData data = levelManager.getCurrentLevel().getLevelData(); // Use getter
+            LevelData data = levelManager.getCurrentLevel().getLevelData();
             if (data != null && data.playerStartPos != null) {
                 startX = data.playerStartPos.x;
                 startY = data.playerStartPos.y;
             }
         }
-
         Gdx.app.log("GameScreen", "Creating player of type: " + selectedCharacterType);
-        switch (selectedCharacterType.toLowerCase()) {
-            case "lightningmage":
-                // Ensure LightningMagePlayer constructor matches
+        // --- CHANGE START: Add cases for all new players ---
+        switch (this.selectedCharacterType) {
+            case "Knight_1":
+                player = new KnightPlayer(game.assetLoader, startX, startY);
+                break;
+            case "LightningMage":
                 player = new LightningMagePlayer(game.assetLoader, startX, startY, projectileManager);
                 break;
-            // case "knight": // Example for another character
-            //    player = new KnightPlayer(game.assetLoader, startX, startY, ...); // Needs KnightPlayer class
-            //    break;
+            case "FireWizard":
+                player = new FireWizardPlayer(game.assetLoader, startX, startY, projectileManager);
+                break;
+            case "WandererMage":
+                player = new WandererMagePlayer(game.assetLoader, startX, startY, projectileManager);
+                break;
+            case "Samurai":
+                player = new SamuraiPlayer(game.assetLoader, startX, startY); // No projectile manager needed?
+                break;
+            case "SamuraiArcher":
+                player = new SamuraiArcherPlayer(game.assetLoader, startX, startY, projectileManager);
+                break;
+            case "SamuraiCommander":
+                player = new SamuraiCommanderPlayer(game.assetLoader, startX, startY); // No projectile manager needed?
+                break;
+            // --- END CHANGE ---
             default:
-                Gdx.app.error("GameScreen", "Unknown character type: " + selectedCharacterType + ". Defaulting to Mage.");
-                player = new LightningMagePlayer(game.assetLoader, startX, startY, projectileManager);
+                Gdx.app.error("GameScreen", "Unknown or unimplemented character type in createPlayer: " + selectedCharacterType + ". Defaulting to Mage.");
+                player = new LightningMagePlayer(game.assetLoader, startX, startY, projectileManager); // Keep fallback
                 break;
         }
-
         if (player != null) {
-            player.reset(startX, startY); // Ensure player starts correctly
-        } else {
-            Gdx.app.error("GameScreen", "Player object is null after creation attempt!");
+            player.reset(startX, startY);
         }
     }
+
 
     @Override
     public void show() {
-        super.show(); // Sets InputProcessor to UI Stage
-        Gdx.app.log("GameScreen", "Showing Game Screen");
+        super.show();
+        Gdx.app.log("GameScreen", "Showing Game Screen for " + username);
+        gameIsOver = false;
+        score = 0;
+        totalKillsThisGame = 0;
+        if (enemyManager != null) {
+            enemyManager.resetKillCount();
+            enemyManager.startSpawning(); // Ensure continuous spawning is active
+        } else {
+            Gdx.app.error("GameScreen", "EnemyManager is null in show()");
+        }
     }
 
     private void update(float delta) {
-        // Handle pause input first
+        if (gameIsOver) return;
+
         if (InputManager.isActionJustPressed(InputManager.Action.PAUSE)) {
-            Gdx.app.log("GameScreen", "Pause requested (Implement PauseScreen)");
-            // game.setScreen(new PauseScreen(game, this)); // TODO: Create PauseScreen
-            return; // Skip game update if paused
+            Gdx.app.log("GameScreen", "Pause requested - NOT IMPLEMENTED");
+            // game.setScreen(new PauseScreen(game, this)); // Future implementation
+            return;
         }
 
-        // Update game logic
-        if (player != null) player.update(delta);
-        if (enemyManager != null) enemyManager.update(delta);
-        if (projectileManager != null) projectileManager.update(delta);
-        if (collisionManager != null) collisionManager.checkCollisions();
-        if (levelManager != null && player != null) levelManager.update(delta, player.position.x);
+        try {
+            if (player != null) player.update(delta);
+            if (enemyManager != null) {
+                enemyManager.update(delta);
+                int currentSessionKills = enemyManager.getKillCountThisSession(); // Get count without resetting yet
+                if (currentSessionKills > totalKillsThisGame) {
+                    int newKills = currentSessionKills - totalKillsThisGame;
+                    score += newKills * GameConfig.ENEMY_KILL_SCORE;
+                    totalKillsThisGame = currentSessionKills; // Update total tracked by GameScreen
+                    Gdx.app.debug("GameScreen", "Score updated: " + score + " (Total Kills: " + totalKillsThisGame + ")");
+                }
+            }
+            if (projectileManager != null) projectileManager.update(delta);
+            if (collisionManager != null) collisionManager.checkCollisions();
+            if (levelManager != null && player != null) levelManager.update(delta, player.position.x);
 
-        // Update Camera
-        if (player != null) {
-            float targetX = player.position.x + player.bounds.width / 2f; // Center on player approx
-            // Smooth camera follow using interpolation (lerp)
-            gameCamera.position.lerp(new Vector3(targetX, GameConfig.V_HEIGHT / 2f, 0), 0.1f); // Adjust lerp factor (0.1f) for desired smoothness
-            // TODO: Add camera bounds clamping based on level width
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Error during game update loop!", e);
+            handleGameOver(false);
+            gameIsOver = true;
+            return;
+        }
+
+        // Update Camera (with safety checks)
+        if (player != null && player.position != null && player.bounds != null && gameCamera != null && gameViewport != null) {
+            float targetX = player.position.x + player.bounds.width / 2f;
+            float lerpFactor = 0.1f;
+            gameCamera.position.lerp(new Vector3(targetX, GameConfig.V_HEIGHT / 2f, 0), lerpFactor);
+            float cameraHalfWidth = gameViewport.getWorldWidth() / 2f;
+            float levelWidth = (levelManager != null && levelManager.getCurrentLevel() != null && levelManager.getCurrentLevel().getLevelData() != null)
+                ? levelManager.getCurrentLevel().getLevelData().levelWidth
+                : Float.MAX_VALUE;
+            gameCamera.position.x = Math.max(cameraHalfWidth, gameCamera.position.x);
+            if (levelWidth > gameViewport.getWorldWidth()) {
+                gameCamera.position.x = Math.min(levelWidth - cameraHalfWidth, gameCamera.position.x);
+            }
             gameCamera.update();
         }
 
-        // Update HUD
-        if (uiManager != null && player != null) uiManager.updateHUD(player);
+        // Update HUD (with safety checks)
+        if (uiManager != null && player != null) {
+            uiManager.updateHUD(player, score);
+        }
 
-        // Check Game Over using fully qualified name for State enum
-        if (player != null && !player.isAlive() && player.isAnimationFinished(com.has.mt.gameobjects.Character.State.DEAD)) {
-            handleGameOver();
+        // Check Game Over Conditions
+        checkGameOverConditions();
+    }
+
+    private void checkGameOverConditions() {
+        if (gameIsOver) return;
+        boolean playerDead = (player == null || !player.isAlive());
+        boolean playerWon = (score >= GameConfig.WIN_SCORE);
+
+        if (playerDead) {
+            boolean deathAnimFinished = (player != null && player.getCurrentState() == Character.State.DEAD && player.isAnimationFinished(Character.State.DEAD));
+            if (player == null || deathAnimFinished) {
+                Gdx.app.log("GameScreen", "Game Over: Player Died.");
+                handleGameOver(false); // Player Lost
+            }
+        } else if (playerWon) {
+            Gdx.app.log("GameScreen", "Game Over: Player Won!");
+            handleGameOver(true); // Player Won
         }
     }
 
-    private void handleGameOver() {
-        Gdx.app.log("GameScreen", "Player is dead. Switching to Main Menu.");
-        // TODO: Implement GameOverScreen later
-        game.setScreen(new MainMenuScreen(game)); // Go back to menu
-        dispose(); // Dispose this screen
+    private void handleGameOver(boolean playerWon) {
+        if(gameIsOver) return; // Prevent multiple calls
+        gameIsOver = true; // Set flag immediately
+        Gdx.app.log("GameScreen", "Switching to GameOverScreen. Won: " + playerWon);
+        if (enemyManager != null) {
+            enemyManager.stopSpawning();
+        }
+        if (selectedCharacterType != null && game.assetLoader != null) { // Safety check asset loader
+            game.assetLoader.unloadCurrentPlayerAssets();
+        }
+        // Ensure game instance is valid before setting screen
+        if (game != null) {
+            game.setScreen(new GameOverScreen(game, playerWon, score, totalKillsThisGame, username));
+            dispose(); // Dispose this GameScreen after setting the new one
+        } else {
+            Gdx.app.error("GameScreen", "Game instance is null, cannot switch to GameOverScreen!");
+        }
     }
+
 
     @Override
     public void render(float delta) {
-        // 1. Clear Screen
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // 2. Update Game State
         update(delta);
-
-        // 3. Render Game World
-        gameViewport.apply();
-        game.batch.setProjectionMatrix(gameCamera.combined);
-
-        // --- Ensure batch color is white before drawing world ---
-        game.batch.setColor(Color.WHITE); // Explicitly set to white
-        // ------------------------------------------------------
-        game.batch.begin();
-        if (levelManager != null) {
-            levelManager.renderBackground(game.batch, gameCamera.position.x); // Background now handles its own color/reset
-            levelManager.renderFloor(game.batch, gameCamera.position.x);       // Floor now handles its own color/reset
+        if (gameIsOver) {
+            try { super.render(delta); }
+            catch (Exception e) { Gdx.app.error("GameScreen", "Error rendering UI during game over transition", e); }
+            return;
         }
-        // --- Ensure batch color is white before drawing characters ---
-        game.batch.setColor(Color.WHITE); // Belt-and-suspenders approach
-        // ---------------------------------------------------------
-        if (enemyManager != null) enemyManager.render(game.batch);
-        if (player != null) player.render(game.batch);
-        if (projectileManager != null) projectileManager.render(game.batch);
-        game.batch.end();
-
-
-        // 4. Render Debug (Optional)
-        if (GameConfig.DEBUG_DRAW_BOXES) {
+        try {
+            gameViewport.apply();
+            game.batch.setProjectionMatrix(gameCamera.combined);
+            game.batch.setColor(Color.WHITE);
+            game.batch.begin();
+            if (levelManager != null) {
+                levelManager.renderBackground(game.batch, gameCamera.position.x);
+                levelManager.renderFloor(game.batch, gameCamera.position.x);
+            }
+            game.batch.setColor(Color.WHITE); // Reset just in case
+            if (enemyManager != null) enemyManager.render(game.batch);
+            if (player != null) player.render(game.batch);
+            if (projectileManager != null) projectileManager.render(game.batch);
+            game.batch.end();
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Error during game world rendering!", e);
+            if (game.batch != null && game.batch.isDrawing()) game.batch.end(); // Safely end batch
+            handleGameOver(false); // Trigger game over on render error
+        }
+        if (GameConfig.DEBUG_DRAW_BOXES && !gameIsOver && game.shapeRenderer != null) { // Added shapeRenderer null check
             gameViewport.apply();
             game.shapeRenderer.setProjectionMatrix(gameCamera.combined);
-            // ShapeRenderer uses its own color methods, no batch conflict here
-            game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             try {
-                if (player != null) DebugUtils.drawDebugLines(game.shapeRenderer, player);
+                game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                if (player != null) player.drawDebug(game.shapeRenderer);
                 if (enemyManager != null) enemyManager.drawDebug(game.shapeRenderer);
-            } catch (Exception e) { Gdx.app.error("GameScreen", "Debug draw error", e); }
-            finally { if (game.shapeRenderer.isDrawing()) game.shapeRenderer.end(); }
+                game.shapeRenderer.end();
+            } catch (Exception e) {
+                Gdx.app.error("GameScreen", "Debug draw error", e);
+                if (game.shapeRenderer.isDrawing()) game.shapeRenderer.end();
+            }
         }
-
-        // 5. Render UI
-        super.render(delta); // Draws the UI Stage
+        try {
+            super.render(delta); // Render UI Stage
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Error during UI rendering!", e);
+        }
     }
+
     @Override
     public void resize(int width, int height) {
-        gameViewport.update(width, height); // Update game viewport
-        gameCamera.update(); // Update game camera associated with game viewport
-        super.resize(width, height); // Update UI viewport via AbstractScreen
+        if (gameViewport != null) gameViewport.update(width, height); // Added null check
+        if (gameCamera != null) gameCamera.update(); // Added null check
+        super.resize(width, height);
     }
 
     @Override
     public void dispose() {
-        Gdx.app.log("GameScreen", "Disposing Game Screen");
-        // Dispose in reverse order of creation or based on dependencies
-        if (player != null) player.dispose();
-        if (enemyManager != null) enemyManager.dispose();
-        if (projectileManager != null) projectileManager.dispose();
-        if (levelManager != null) levelManager.dispose();
-        if (uiManager != null) uiManager.dispose();
-        // CollisionManager typically doesn't need dispose unless it holds Disposable resources
-        super.dispose(); // Disposes UI stage
+        Gdx.app.log("GameScreen", "Disposing Game Screen for user " + username);
+        if (enemyManager != null) { enemyManager.stopSpawning(); } // Ensure spawning stops first
+        if (player != null) { player.dispose(); player = null; }
+        if (enemyManager != null) { enemyManager.dispose(); enemyManager = null; }
+        if (projectileManager != null) { projectileManager.dispose(); projectileManager = null; }
+        if (levelManager != null) { levelManager.dispose(); levelManager = null; }
+        if (uiManager != null) { uiManager.dispose(); uiManager = null; }
+        collisionManager = null;
+        super.dispose(); // Disposes stage
+        Gdx.app.log("GameScreen", "Game Screen dispose finished.");
     }
 
-    // --- Other lifecycle methods ---
-    @Override public void pause() { Gdx.app.log("GameScreen", "Pausing"); }
-    @Override public void resume() { Gdx.app.log("GameScreen", "Resuming"); }
-    @Override public void hide() { super.hide(); Gdx.app.log("GameScreen", "Hiding"); }
+    @Override public void pause() { Gdx.app.log("GameScreen", "Pausing"); if (enemyManager != null) enemyManager.stopSpawning(); }
+    @Override public void resume() { Gdx.app.log("GameScreen", "Resuming"); if (enemyManager != null && !gameIsOver) enemyManager.startSpawning(); } // Only restart if game not over
+    @Override public void hide() { super.hide(); Gdx.app.log("GameScreen", "Hiding"); if (enemyManager != null) enemyManager.stopSpawning(); }
 
-} // End of class
+}
