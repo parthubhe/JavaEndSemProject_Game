@@ -16,7 +16,7 @@ dependencies {
   api "com.github.tommyettinger:anim8-gdx:$anim8Version"
   api "com.github.tommyettinger:libgdx-texturepacker:$texturePackerOnlyVersion"
   api "com.github.tommyettinger:libgdx-textureunpacker:$textureUnpackerOnlyVersion"
-
+  implementation 'mysql:mysql-connector-java:8.0.33'
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
