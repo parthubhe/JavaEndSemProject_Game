@@ -8,6 +8,10 @@ import com.has.mt.GameConfig;
 import com.has.mt.GameLogicException;
 import com.has.mt.interfaces.GameExceptionMessages;
 import com.has.mt.managers.InputManager;
+// --- CHANGE START: Import Set and HashSet ---
+import java.util.HashSet;
+import java.util.Set;
+// --- CHANGE END ---
 
 
 public abstract class Player extends Character {
@@ -25,6 +29,10 @@ public abstract class Player extends Character {
 
     protected int killCount = 0;
     protected boolean wantsToDefend = false; // Flag for Defend input
+
+    // --- CHANGE START: Add Set to track hit enemies per attack ---
+    protected Set<Enemy> hitEnemiesThisAttack = new HashSet<>();
+    // --- CHANGE END ---
 
 
     public Player(AssetLoader assetLoader, float x, float y) {
@@ -156,6 +164,9 @@ public abstract class Player extends Character {
                 stateComponent.setState(attackState); // Set the character's state
                 animationComponent.resetStateTimer(attackState); // Start the animation from the beginning
                 velocity.x = 0; // Stop horizontal movement during the attack (optional, can be adjusted per attack)
+                // --- CHANGE START: Clear hit enemy set on new attack ---
+                hitEnemiesThisAttack.clear();
+                // --- CHANGE END ---
             }
         }
     }
@@ -215,28 +226,38 @@ public abstract class Player extends Character {
         }
     }
 
-    // --- CHANGE START: Make updateAttack abstract and public ---
-    // Now correctly overriding the abstract method from Character
     @Override
     public abstract void updateAttack(float delta);
-    // --- CHANGE END ---
 
-    // --- CHANGE START: Add public isAttacking method ---
-    /**
-     * Checks if the player is currently in an attack sequence.
-     * @return true if the player is attacking, false otherwise.
-     */
     public boolean isAttacking() {
         return isAttacking;
     }
-    // --- CHANGE END ---
 
     @Override
     public void takeDamage(int amount) {
-        // Incorporate DEFEND check from Character class if not overridden here.
         super.takeDamage(amount); // Call Character's takeDamage which handles DEFEND state.
     }
 
+    // --- CHANGE START: Add methods for hit tracking ---
+    /**
+     * Checks if a specific enemy has already been hit during the current attack animation.
+     * @param enemy The enemy to check.
+     * @return true if the enemy was already hit this attack sequence, false otherwise.
+     */
+    public boolean hasHitEnemyThisAttack(Enemy enemy) {
+        return hitEnemiesThisAttack.contains(enemy);
+    }
+
+    /**
+     * Marks an enemy as having been hit during the current attack animation.
+     * @param enemy The enemy that was hit.
+     */
+    public void markEnemyHitThisAttack(Enemy enemy) {
+        if (enemy != null) {
+            hitEnemiesThisAttack.add(enemy);
+        }
+    }
+    // --- CHANGE END ---
 
     public void reset(float x, float y) {
         if (position != null) position.set(x, y);
@@ -250,6 +271,7 @@ public abstract class Player extends Character {
         invulnerableTimer = 0f;
         killCount = 0;
         wantsToDefend = false;
+        hitEnemiesThisAttack.clear(); // Ensure set is clear on reset
         Gdx.app.log("Player", this.getClass().getSimpleName() + " reset to (" + x + "," + y + ")");
     }
 

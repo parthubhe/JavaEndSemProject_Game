@@ -55,16 +55,15 @@ public class LightningMagePlayer extends Player {
         animationComponent.addAnimation(State.HURT, AssetLoader.MAGE_HURT_PATH, 3, 1, 0.1f, PlayMode.NORMAL);
         animationComponent.addAnimation(State.DEAD, AssetLoader.MAGE_DEAD_PATH, 5, 1, 0.15f, PlayMode.NORMAL);
 
-        // --- CHANGE START: Link LIGHTNING_BALL_CAST back to IDLE or a very short anim ---
-        // The actual projectile spawn happens after CHARGED finishes.
-        // LIGHTNING_BALL_CAST state is now just a brief moment before returning to idle.
+        // Link LIGHTNING_BALL_CAST back to IDLE for a quick transition
         if (animationComponent.hasAnimationForState(State.IDLE)) {
             animationComponent.linkStateAnimation(State.LIGHTNING_BALL_CAST, State.IDLE);
             Gdx.app.log("LightningMagePlayer", "Linked LIGHTNING_BALL_CAST state to IDLE animation (for quick transition).");
         } else {
             Gdx.app.error("LightningMagePlayer", "Cannot link LIGHTNING_BALL_CAST: IDLE animation missing.");
+            // As a fallback, maybe link to CHARGED or another short animation if IDLE fails?
+            // For now, this error log is sufficient.
         }
-        // --- CHANGE END ---
 
         // Link FALL state
         if (animationComponent.hasAnimationForState(State.JUMP)) {
@@ -83,7 +82,7 @@ public class LightningMagePlayer extends Player {
 
 
     @Override
-    public void updateAttack(float delta) { // Changed to public
+    public void updateAttack(float delta) {
         if (isAttacking) {
             State currentAttackState = stateComponent.getCurrentState();
             boolean attackSequenceComplete = false;
@@ -92,20 +91,18 @@ public class LightningMagePlayer extends Player {
             switch (currentAttackState) {
                 case CHARGED: // Playing LM_Chargeball.png
                     if (animationComponent.isAnimationFinished(State.CHARGED)) {
-                        // Finished charging, spawn projectile and briefly enter CAST state
                         Gdx.app.log("LightningMagePlayer", "Charged finished, spawning projectile and entering CAST state.");
-                        spawnLightningBall(); // Spawn the ball
-                        // --- CHANGE START: Transition to CAST state (linked to IDLE) ---
-                        // This state is very short, mainly to prevent immediate re-attack
+                        spawnLightningBall(); // Spawn the ball using LM_Charge.png
+                        // Transition to CAST state (linked to IDLE) - very short, prevents immediate re-attack
                         stateComponent.setState(State.LIGHTNING_BALL_CAST);
                         animationComponent.resetStateTimer(State.LIGHTNING_BALL_CAST);
-                        // Since CAST is linked to IDLE (looping), we mark sequence complete immediately
+                        // Sequence effectively completes immediately after entering CAST
                         attackSequenceComplete = true;
-                        // --- CHANGE END ---
                     }
                     break;
 
-
+                // LIGHTNING_BALL_CAST is linked to IDLE, so it doesn't have a definite end.
+                // The sequence completion is handled when transitioning *into* it from CHARGED.
 
                 case LIGHT_ATTACK:
                 case HEAVY_ATTACK:
@@ -114,11 +111,12 @@ public class LightningMagePlayer extends Player {
                     if (animationComponent.isAnimationFinished(currentAttackState)) {
                         attackSequenceComplete = true;
                     }
+                    // Add damage timing logic here if needed (e.g., for VADERSTRIKE)
+                    // Example: check animation timer, if past certain point and !hasHitEnemyThisAttack... apply damage
                     break;
 
                 default:
                     // If in an unknown attack state, finish if animation ends
-                    // Needed because LIGHTNING_BALL_CAST linked to IDLE won't trigger isAnimationFinished
                     if (currentAttackState != State.LIGHTNING_BALL_CAST && animationComponent.isAnimationFinished(currentAttackState)){
                         attackSequenceComplete = true;
                         Gdx.app.log("LightningMagePlayer", "Attack state " + currentAttackState + " finished (default).");
@@ -132,14 +130,16 @@ public class LightningMagePlayer extends Player {
                 isAttacking = false;
                 attackTimer = attackCooldown; // Apply cooldown
                 State nextState = (physicsComponent != null && physicsComponent.isOnGround()) ? State.IDLE : State.FALL;
-                // Ensure we don't immediately exit the short CAST state if that was the finisher
+
+                // Don't immediately override the brief CAST state if that's what finished the sequence
                 if (stateComponent.getCurrentState() != State.LIGHTNING_BALL_CAST) {
                     stateComponent.setState(nextState);
                 } else {
-                    // If the sequence finisher WAS the cast state, just ensure isAttacking is false
-                    // and let the normal state machine take over next frame (will likely go IDLE/FALL)
-                    Gdx.app.debug("LightningMagePlayer", "Transitioning out of CAST state.");
+                    Gdx.app.debug("LightningMagePlayer", "Transitioning out of CAST state (next update will likely go IDLE/FALL).");
                 }
+                // --- Minor Change: Clear hit enemy set when attack sequence finishes ---
+                hitEnemiesThisAttack.clear();
+                // --- End Minor Change ---
             }
 
         } else if (attackTimer > 0) {
@@ -153,6 +153,7 @@ public class LightningMagePlayer extends Player {
         float spawnOffsetY = bounds.height * 0.5f; // Centered vertically approx
         float projectileWidth = 0;
         try { // Safely get projectile texture width
+            // Use the LIGHTNING_BALL asset path for the projectile's texture/animation
             Texture projectileTexture = assetLoader.get(AssetLoader.MAGE_LIGHTNING_BALL_PATH, Texture.class);
             if (LIGHTNING_BALL_COLS > 0) projectileWidth = (projectileTexture.getWidth() / LIGHTNING_BALL_COLS) * 2.0f; // Scale = 2.0f
         } catch (Exception e) { Gdx.app.error("LMP", "Failed to get projectile texture for width calculation.", e); }

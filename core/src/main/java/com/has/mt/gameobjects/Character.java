@@ -1,3 +1,4 @@
+// ######## START OF FILE: gameobjects/Character.java ########
 package com.has.mt.gameobjects;
 
 import com.badlogic.gdx.Gdx;
@@ -29,27 +30,28 @@ public abstract class Character {
     public AnimationComponent animationComponent;
     protected AssetLoader assetLoader;
 
-    // Added DEFEND state
+    // --- CHANGE START: Add CHARGE1 state ---
     public enum State {
         IDLE, WALK, RUN, JUMP, FALL,
         HURT, DEAD,
-        // Generic Attacks (can be mapped by player classes)
+        // Generic Attacks
         ATTACK1, ATTACK2, ATTACK3,
-        // Specific Player Attacks/Abilities (mapped from generic inputs)
+        // Specific Player Attacks/Abilities
         LIGHT_ATTACK, HEAVY_ATTACK, // Standard Melee
         DEFEND, // Block/Protect State
         // Mage Specific
-        CHARGED, // Lightning Mage Charge Start
-        LIGHTNING_BALL_CAST, // Lightning Mage Projectile Cast
-        VADERSTRIKE, // Lightning Mage Special
-        FIREBALL_CAST, // Fire Wizard Projectile
-        FLAME_JET_CAST, // Fire Wizard Special
-        MAGIC_ARROW_CAST, // Wanderer Mage Projectile 1
-        MAGIC_SPHERE_CAST, // Wanderer Mage Projectile 2
+        CHARGED, // Existing charge state (e.g., Lightning Mage)
+        // CHARGE1, // *** REMOVED *** (was added for previous incorrect Wanderer logic)
+        LIGHTNING_BALL_CAST,
+        VADERSTRIKE,
+        FIREBALL_CAST,
+        FLAME_JET_CAST,
+        MAGIC_ARROW_CAST, // Wanderer Mage Cast Anim 1 (Plays Magic_arrow.png)
+        MAGIC_SPHERE_CAST, // Wanderer Mage Cast Anim 2 (Plays Magic_sphere.png)
         // Archer Specific
-        ARROW_SHOT // Samurai Archer Projectile
-        // Add more specific states as needed
+        ARROW_SHOT
     }
+    // --- CHANGE END ---
 
 
     public Character(AssetLoader assetLoader, float x, float y, float scale) {
@@ -74,11 +76,9 @@ public abstract class Character {
         if (animationComponent == null || stateComponent == null || batch == null) return; // Safety check
         TextureRegion currentFrame = animationComponent.getCurrentFrame(stateComponent.getCurrentState());
         if (currentFrame == null) {
-            // Gdx.app.error("Character", "No frame found for state: " + stateComponent.getCurrentState() + " for " + this.getClass().getSimpleName());
             currentFrame = animationComponent.getCurrentFrame(State.IDLE); // Try idle as fallback
             if(currentFrame == null) return; // Give up if idle is also missing
         }
-
 
         float frameWidth = currentFrame.getRegionWidth() * scale;
         float frameHeight = currentFrame.getRegionHeight() * scale;
@@ -90,11 +90,9 @@ public abstract class Character {
         if (facingRight) {
             batch.draw(currentFrame, position.x, position.y, frameWidth, frameHeight);
         } else {
-            // Flip horizontally by drawing with negative width and offset X
             batch.draw(currentFrame, position.x + frameWidth, position.y, -frameWidth, frameHeight);
         }
     }
-
 
     public void drawDebug(ShapeRenderer shapeRenderer) {
         if (!GameConfig.DEBUG_DRAW_BOXES || shapeRenderer == null) return;
@@ -104,25 +102,20 @@ public abstract class Character {
     }
 
     public void takeDamage(int amount) {
-        if (healthComponent == null || stateComponent == null || animationComponent == null) return; // Safety
+        if (healthComponent == null || stateComponent == null || animationComponent == null) return;
 
-        // Damage reduction/negation if defending
         if (stateComponent.isState(State.DEFEND)) {
-            // Example: Reduce damage by 80% when defending
-            amount *= 0.2f; // Make damage only 20%
-            if(amount < 1 && amount > 0) amount = 1; // Ensure at least 1 damage if not fully blocked
+            amount *= 0.2f;
+            if(amount < 1 && amount > 0) amount = 1;
             Gdx.app.log("Character", "Damage reduced by Defend state. Taking: " + amount);
-            // Add visual/sound effect for block here
         }
 
-        if (healthComponent.isAlive() && amount > 0) { // Only apply positive damage
+        if (healthComponent.isAlive() && amount > 0) {
             healthComponent.decreaseHealth(amount);
             if (healthComponent.isAlive()) {
-                // Don't interrupt an existing hurt animation, or death animation
                 if (!stateComponent.isState(State.HURT) && !stateComponent.isState(State.DEAD)) {
                     stateComponent.setState(State.HURT);
                     animationComponent.resetStateTimer(State.HURT);
-                    // Optional knockback can be added here
                 }
             } else {
                 die();
@@ -135,7 +128,7 @@ public abstract class Character {
         if (!stateComponent.isState(State.DEAD)) {
             Gdx.app.log("Character", this.getClass().getSimpleName() + " Died at " + position);
             stateComponent.setState(State.DEAD);
-            velocity.set(0, 0); // Stop movement
+            velocity.set(0, 0);
             animationComponent.resetStateTimer(State.DEAD);
         }
     }
@@ -152,11 +145,7 @@ public abstract class Character {
         return healthComponent != null && healthComponent.isAlive();
     }
 
-    // --- CHANGE START: Make updateAttack abstract and public ---
-    // Subclasses MUST implement how they handle attack timing, state changes, etc.
     public abstract void updateAttack(float delta);
-    // --- CHANGE END ---
-
 
     public void dispose() {
         if (animationComponent != null) {
@@ -164,3 +153,4 @@ public abstract class Character {
         }
     }
 }
+// ######## END OF FILE: gameobjects/Character.java ########

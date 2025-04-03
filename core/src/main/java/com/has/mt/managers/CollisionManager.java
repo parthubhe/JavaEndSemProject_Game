@@ -58,16 +58,19 @@ public class CollisionManager {
                         int damage = getDamageForPlayerState(pState);
                         if (damage > 0) {
                             // TODO: Add player attack hitbox check here instead of just bounds overlap
-                            // TODO: Add enemy invulnerability check
-                            enemy.takeDamage(damage);
-                            // Gdx.app.debug("CollisionManager", "Player (" + pState + ") hit Enemy (" + enemy.getClass().getSimpleName() + "). Enemy Health: " + enemy.healthComponent.getCurrentHealth());
+                            // --- CHANGE START: Check if enemy already hit this attack ---
+                            if (!player.hasHitEnemyThisAttack(enemy)) {
+                                enemy.takeDamage(damage);
+                                player.markEnemyHitThisAttack(enemy); // Mark as hit for this attack sequence
+                                Gdx.app.debug("CollisionManager", "Player (" + pState + ") hit Enemy (" + enemy.getClass().getSimpleName() + ") ONCE. Enemy Health: " + enemy.healthComponent.getCurrentHealth());
+                            }
+                            // --- CHANGE END ---
                         }
                     }
                 }
 
                 // --- Enemy attacking Player ---
                 Character.State eState = enemy.getCurrentState();
-                // --- CHANGE START: Check damage dealt flag ---
                 // Check if enemy is in attack state AND hasn't dealt damage in this specific attack instance yet
                 if (enemy.isAttacking() && isMeleeAttackState(eState) && !enemy.hasDealtDamageThisAttack()) {
                     // Player invulnerability is handled within player.takeDamage
@@ -76,12 +79,11 @@ public class CollisionManager {
                     enemy.markDamageDealtThisAttack();
                     Gdx.app.debug("CollisionManager", "Enemy (" + enemy.getClass().getSimpleName() + "/" + eState + ") dealt damage to Player. Player Health: " + player.healthComponent.getCurrentHealth());
                 }
-                // --- CHANGE END ---
             }
         }
     }
 
-    // Combined projectile checks (no changes needed here for the instant death issue)
+    // Combined projectile checks
     private void checkProjectileCollisions() {
         checkProjectileEnemyCollisions();
         // Only check vs player if player is alive
@@ -109,7 +111,7 @@ public class CollisionManager {
                     enemy.takeDamage(projectile.getDamage());
                     projectile.setActive(false); // Deactivate projectile on hit
                     Gdx.app.debug("CollisionManager", "Player Projectile hit Enemy (" + enemy.getClass().getSimpleName() + "). Enemy Health: " + enemy.healthComponent.getCurrentHealth());
-                    break;
+                    break; // Projectile hits one enemy and is destroyed
                 }
             }
         }
@@ -141,12 +143,13 @@ public class CollisionManager {
 
     private boolean isMeleeAttackState(Character.State state) {
         if(state == null) return false;
+        // Include all relevant melee states for both player and enemies
         return state == Character.State.LIGHT_ATTACK ||
             state == Character.State.HEAVY_ATTACK ||
             state == Character.State.ATTACK1 ||
             state == Character.State.ATTACK2 ||
             state == Character.State.ATTACK3 ||
-            state == Character.State.VADERSTRIKE; // Example list
+            state == Character.State.VADERSTRIKE; // Add other melee-like specials if needed
     }
 
     private int getDamageForPlayerState(Character.State state) {
@@ -154,8 +157,8 @@ public class CollisionManager {
         switch(state) {
             case LIGHT_ATTACK: return GameConfig.LIGHT_ATTACK_DAMAGE;
             case HEAVY_ATTACK: return GameConfig.HEAVY_ATTACK_DAMAGE;
-            case ATTACK3: return GameConfig.HEAVY_ATTACK_DAMAGE + 5; // Example
-            case VADERSTRIKE: return GameConfig.HEAVY_ATTACK_DAMAGE * 2; // Example
+            case ATTACK3: return GameConfig.HEAVY_ATTACK_DAMAGE + 5; // Example for specific attacks
+            case VADERSTRIKE: return GameConfig.HEAVY_ATTACK_DAMAGE * 2; // Example for specific attacks
             default: return 0;
         }
     }

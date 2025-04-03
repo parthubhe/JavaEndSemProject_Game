@@ -16,11 +16,27 @@ public class FireWizardPlayer extends Player {
 
     private final ProjectileManager projectileManager;
 
-    // Projectile details for the charge projectile (only charge spawns a projectile)
-    private static final int CHARGE_PROJ_COLS = 12;
+    // --- CHANGE START: Define constants for projectile anims ---
+    // Projectile details for the fireball (spawned after FIREBALL_CAST)
+    private static final int FIREBALL_PROJ_COLS = 12; // Fireball.png is 12x1
+    private static final int FIREBALL_PROJ_ROWS = 1;
+    private static final float FIREBALL_PROJ_FD = 0.1f;
+    private static final int FIREBALL_PROJ_DAMAGE = 18;
+
+    // Projectile details for the flame jet (spawned after FLAME_JET_CAST)
+    private static final int FLAMEJET_PROJ_COLS = 14; // Flame_jet.png is 14x1
+    private static final int FLAMEJET_PROJ_ROWS = 1;
+    private static final float FLAMEJET_PROJ_FD = 0.08f;
+    private static final int FLAMEJET_PROJ_DAMAGE = 8;
+    // --- CHANGE END ---
+
+    // Projectile details for the charge projectile (spawned after CHARGED)
+    // Charge.png is 6x1 according to Wanderer Mage setup attempt, VERIFY THIS
+    private static final int CHARGE_PROJ_COLS = 6;
     private static final int CHARGE_PROJ_ROWS = 1;
     private static final float CHARGE_PROJ_FD = 0.1f;
-    private static final int CHARGE_PROJ_DAMAGE = 18;
+    private static final int CHARGE_PROJ_DAMAGE = 20; // Example damage
+
 
     public FireWizardPlayer(AssetLoader assetLoader, float x, float y, ProjectileManager projectileManager) {
         super(assetLoader, x, y);
@@ -28,6 +44,11 @@ public class FireWizardPlayer extends Player {
             throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "ProjectileManager in FireWizardPlayer");
         }
         this.projectileManager = projectileManager;
+
+        if (this.animationComponent == null) {
+            throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "AnimationComponent in FireWizardPlayer");
+        }
+
         try {
             setupAnimations();
         } catch (Exception e) {
@@ -47,22 +68,43 @@ public class FireWizardPlayer extends Player {
         animationComponent.addAnimation(State.HURT, AssetLoader.FIRE_WIZARD_HURT_PATH, 3, 1, 0.1f, PlayMode.NORMAL);
         animationComponent.addAnimation(State.DEAD, AssetLoader.FIRE_WIZARD_DEAD_PATH, 7, 1, 0.15f, PlayMode.NORMAL);
 
-        // Melee attack animations remain unchanged
+        // Melee attacks
         animationComponent.addAnimation(State.LIGHT_ATTACK, AssetLoader.FIRE_WIZARD_ATTACK1_PATH, 4, 1, 0.08f, PlayMode.NORMAL);
         animationComponent.addAnimation(State.HEAVY_ATTACK, AssetLoader.FIRE_WIZARD_ATTACK2_PATH, 4, 1, 0.09f, PlayMode.NORMAL);
 
-        // Load the charge animation (this is the only state that will spawn a projectile)
-        animationComponent.addAnimation(State.CHARGED, AssetLoader.FIRE_WIZARD_CHARGE_PATH, 6, 1, 0.1f, PlayMode.NORMAL);
-        Gdx.app.log("FireWizardPlayer", "Loaded CHARGED animation from charge.png.");
+        // --- CHANGE START: Map CAST states to corresponding animations ---
+        // CHARGED state uses Charge.png animation
+        // VERIFY frame count (6?) and duration (0.1f?)
+        if (Gdx.files.internal(AssetLoader.FIRE_WIZARD_CHARGE_PATH).exists()) {
+            animationComponent.addAnimation(State.CHARGED, AssetLoader.FIRE_WIZARD_CHARGE_PATH, 6, 1, 0.1f, PlayMode.NORMAL);
+            Gdx.app.log("FireWizardPlayer", "Mapped CHARGED state to Charge animation.");
+        } else {
+            Gdx.app.error("FireWizardPlayer", "Charge animation not found at " + AssetLoader.FIRE_WIZARD_CHARGE_PATH + "! Linking CHARGED to IDLE.");
+            animationComponent.linkStateAnimation(State.CHARGED, State.IDLE);
+        }
 
-        // The following cast animations are purely cosmetic (they do not spawn projectiles)
-        animationComponent.addAnimation(State.FIREBALL_CAST, AssetLoader.FIRE_WIZARD_FIREBALL_PATH, 12, 1, 0.1f, PlayMode.NORMAL);
-        Gdx.app.log("FireWizardPlayer", "Loaded FIREBALL_CAST animation from fireball sprite sheet.");
+        // FIREBALL_CAST state uses Fireball.png animation
+        // VERIFY frame count (12?) and duration (0.1f?)
+        if (Gdx.files.internal(AssetLoader.FIRE_WIZARD_FIREBALL_PATH).exists()) {
+            animationComponent.addAnimation(State.FIREBALL_CAST, AssetLoader.FIRE_WIZARD_FIREBALL_PATH, 12, 1, 0.1f, PlayMode.NORMAL);
+            Gdx.app.log("FireWizardPlayer", "Mapped FIREBALL_CAST state to Fireball animation.");
+        } else {
+            Gdx.app.error("FireWizardPlayer", "Fireball animation not found at " + AssetLoader.FIRE_WIZARD_FIREBALL_PATH + "! Linking FIREBALL_CAST to IDLE.");
+            animationComponent.linkStateAnimation(State.FIREBALL_CAST, State.IDLE);
+        }
 
-        animationComponent.addAnimation(State.FLAME_JET_CAST, AssetLoader.FIRE_WIZARD_FLAME_JET_PATH, 14, 1, 0.08f, PlayMode.NORMAL);
-        Gdx.app.log("FireWizardPlayer", "Loaded FLAME_JET_CAST animation from flame jet sprite sheet.");
+        // FLAME_JET_CAST state uses Flame_jet.png animation
+        // VERIFY frame count (14?) and duration (0.08f?)
+        if (Gdx.files.internal(AssetLoader.FIRE_WIZARD_FLAME_JET_PATH).exists()) {
+            animationComponent.addAnimation(State.FLAME_JET_CAST, AssetLoader.FIRE_WIZARD_FLAME_JET_PATH, 14, 1, 0.08f, PlayMode.NORMAL);
+            Gdx.app.log("FireWizardPlayer", "Mapped FLAME_JET_CAST state to Flame_jet animation.");
+        } else {
+            Gdx.app.error("FireWizardPlayer", "Flame_jet animation not found at " + AssetLoader.FIRE_WIZARD_FLAME_JET_PATH + "! Linking FLAME_JET_CAST to IDLE.");
+            animationComponent.linkStateAnimation(State.FLAME_JET_CAST, State.IDLE);
+        }
+        // --- CHANGE END ---
 
-        // Link FALL state to use the JUMP animation
+        // Link Fall state
         if (animationComponent.hasAnimationForState(State.JUMP)) {
             animationComponent.linkStateAnimation(State.FALL, State.JUMP);
         } else {
@@ -72,75 +114,127 @@ public class FireWizardPlayer extends Player {
     }
 
     // Key mapping:
-    // Special1 (E key) now triggers CHARGED (which spawns the projectile when finished).
-    // Special2 (V key) triggers FLAME_JET_CAST (cosmetic only).
+    // Special1 (E key) triggers CHARGED state.
+    // Special2 (V key) triggers FLAME_JET_CAST state.
     @Override
-    protected State mapSpecial1ToAction() {
-        return State.CHARGED;
-    }
+    protected State mapSpecial1ToAction() { return State.CHARGED; }
+    @Override
+    protected State mapSpecial2ToAction() { return State.FLAME_JET_CAST; }
 
-    @Override
-    protected State mapSpecial2ToAction() {
-        return State.FLAME_JET_CAST;
-    }
 
     @Override
     public void updateAttack(float delta) {
         if (isAttacking) {
             State currentAttackState = stateComponent.getCurrentState();
             boolean attackSequenceComplete = false;
-            switch (currentAttackState) {
-                case CHARGED:
-                    if (animationComponent.isAnimationFinished(State.CHARGED)) {
-                        spawnChargeProjectile();
+
+            switch(currentAttackState) {
+                case CHARGED: // Playing Charge.png
+                    if(animationComponent.isAnimationFinished(currentAttackState)) {
+                        spawnChargeProjectile(); // Spawn projectile using Charge.png texture
                         attackSequenceComplete = true;
                     }
                     break;
-                case FIREBALL_CAST:
-                case FLAME_JET_CAST:
+                case FIREBALL_CAST: // Playing Fireball.png
+                    if(animationComponent.isAnimationFinished(currentAttackState)) {
+                        spawnFireballProjectile(); // Spawn projectile using Fireball.png texture
+                        attackSequenceComplete = true;
+                    }
+                    break;
+                case FLAME_JET_CAST: // Playing Flame_jet.png
+                    if(animationComponent.isAnimationFinished(currentAttackState)) {
+                        spawnFlameJetProjectile(); // Spawn projectile using Flame_jet.png texture
+                        attackSequenceComplete = true;
+                    }
+                    break;
                 case LIGHT_ATTACK:
                 case HEAVY_ATTACK:
-                    if (animationComponent.isAnimationFinished(currentAttackState)) {
+                    if(animationComponent.isAnimationFinished(currentAttackState)) {
                         attackSequenceComplete = true;
                     }
                     break;
                 default:
-                    if (animationComponent.isAnimationFinished(currentAttackState)) {
+                    if(animationComponent.isAnimationFinished(currentAttackState)){
                         attackSequenceComplete = true;
                     }
                     break;
             }
+
             if (attackSequenceComplete) {
                 Gdx.app.debug("FireWizardPlayer", "Attack/Cast Finished: " + currentAttackState);
                 isAttacking = false;
                 attackTimer = attackCooldown;
                 State nextState = (physicsComponent != null && physicsComponent.isOnGround()) ? State.IDLE : State.FALL;
                 stateComponent.setState(nextState);
+                // --- Minor Change: Clear hit enemy set when attack sequence finishes ---
+                hitEnemiesThisAttack.clear();
+                // --- End Minor Change ---
             }
         } else if (attackTimer > 0) {
             attackTimer -= delta;
         }
     }
 
-    // This method spawns the projectile for the CHARGED state.
+    // Spawns projectile after CHARGED animation
     private void spawnChargeProjectile() {
         if (projectileManager == null || position == null || bounds == null || assetLoader == null) return;
         Gdx.app.log("FireWizardPlayer", "Spawning Charge Projectile");
         float spawnOffsetY = bounds.height * 0.5f;
         float projectileWidth = 0;
         try {
-            Texture projectileTexture = assetLoader.get(AssetLoader.FIRE_WIZARD_CHARGE_PATH, Texture.class);
-            if (CHARGE_PROJ_COLS > 0)
-                projectileWidth = (projectileTexture.getWidth() / CHARGE_PROJ_COLS) * 2.0f;
-        } catch (Exception e) {
-            Gdx.app.error("FireWizardPlayer", "Failed to get charge texture for width calculation.", e);
-        }
+            Texture projectileTexture = assetLoader.get(AssetLoader.FIRE_WIZARD_CHARGE_PATH, Texture.class); // Use Charge.png for projectile visual
+            if(CHARGE_PROJ_COLS > 0) projectileWidth = (projectileTexture.getWidth() / CHARGE_PROJ_COLS) * 2.0f;
+        } catch (Exception e) { Gdx.app.error("FireWizardPlayer", "Failed to get charge texture for width calc", e); }
+
+        float spawnX = facingRight ? position.x + bounds.width * 0.8f : position.x + bounds.width * 0.2f - projectileWidth;
+        float spawnY = position.y + spawnOffsetY;
+        Projectile proj = new Projectile(assetLoader, spawnX, spawnY,
+            facingRight ? GameConfig.PROJECTILE_SPEED * 0.9f : -GameConfig.PROJECTILE_SPEED * 0.9f, 0, // Slightly slower?
+            CHARGE_PROJ_DAMAGE, this,
+            AssetLoader.FIRE_WIZARD_CHARGE_PATH, // Projectile uses Charge.png
+            CHARGE_PROJ_COLS, CHARGE_PROJ_ROWS, CHARGE_PROJ_FD);
+        projectileManager.addProjectile(proj);
+    }
+
+    // Spawns projectile after FIREBALL_CAST animation
+    private void spawnFireballProjectile() {
+        if (projectileManager == null || position == null || bounds == null || assetLoader == null) return;
+        Gdx.app.log("FireWizardPlayer", "Spawning Fireball projectile");
+        float spawnOffsetY = bounds.height * 0.5f;
+        float projectileWidth = 0;
+        try {
+            Texture projectileTexture = assetLoader.get(AssetLoader.FIRE_WIZARD_FIREBALL_PATH, Texture.class); // Use Fireball.png for projectile visual
+            if(FIREBALL_PROJ_COLS > 0) projectileWidth = (projectileTexture.getWidth() / FIREBALL_PROJ_COLS) * 2.0f;
+        } catch (Exception e) { Gdx.app.error("FireWizardPlayer", "Failed to get fireball texture for width calc", e); }
+
         float spawnX = facingRight ? position.x + bounds.width * 0.8f : position.x + bounds.width * 0.2f - projectileWidth;
         float spawnY = position.y + spawnOffsetY;
         Projectile proj = new Projectile(assetLoader, spawnX, spawnY,
             facingRight ? GameConfig.PROJECTILE_SPEED : -GameConfig.PROJECTILE_SPEED, 0,
-            CHARGE_PROJ_DAMAGE, this, AssetLoader.FIRE_WIZARD_CHARGE_PATH,
-            CHARGE_PROJ_COLS, CHARGE_PROJ_ROWS, CHARGE_PROJ_FD);
+            FIREBALL_PROJ_DAMAGE, this,
+            AssetLoader.FIRE_WIZARD_FIREBALL_PATH, // Projectile uses Fireball.png
+            FIREBALL_PROJ_COLS, FIREBALL_PROJ_ROWS, FIREBALL_PROJ_FD);
+        projectileManager.addProjectile(proj);
+    }
+
+    // Spawns projectile after FLAME_JET_CAST animation
+    private void spawnFlameJetProjectile() {
+        if (projectileManager == null || position == null || bounds == null || assetLoader == null) return;
+        Gdx.app.log("FireWizardPlayer", "Spawning Flame Jet projectile");
+        float spawnOffsetY = bounds.height * 0.4f;
+        float projectileWidth = 0;
+        try {
+            Texture projectileTexture = assetLoader.get(AssetLoader.FIRE_WIZARD_FLAME_JET_PATH, Texture.class); // Use Flame_jet.png for projectile visual
+            if(FLAMEJET_PROJ_COLS > 0) projectileWidth = (projectileTexture.getWidth() / FLAMEJET_PROJ_COLS) * 2.0f;
+        } catch (Exception e) { Gdx.app.error("FireWizardPlayer", "Failed to get flamejet texture for width calc", e); }
+
+        float spawnX = facingRight ? position.x + bounds.width * 0.7f : position.x + bounds.width * 0.3f - projectileWidth;
+        float spawnY = position.y + spawnOffsetY;
+        Projectile proj = new Projectile(assetLoader, spawnX, spawnY,
+            facingRight ? GameConfig.PROJECTILE_SPEED * 1.1f : -GameConfig.PROJECTILE_SPEED * 1.1f, 0, // Slightly faster?
+            FLAMEJET_PROJ_DAMAGE, this,
+            AssetLoader.FIRE_WIZARD_FLAME_JET_PATH, // Projectile uses Flame_jet.png
+            FLAMEJET_PROJ_COLS, FLAMEJET_PROJ_ROWS, FLAMEJET_PROJ_FD);
         projectileManager.addProjectile(proj);
     }
 }
