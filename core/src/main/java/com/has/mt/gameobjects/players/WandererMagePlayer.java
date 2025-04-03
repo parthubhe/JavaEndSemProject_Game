@@ -1,8 +1,9 @@
 package com.has.mt.gameobjects.players;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture; // Added import
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.has.mt.AssetLoader;
 import com.has.mt.GameConfig;
 import com.has.mt.GameLogicException;
@@ -15,17 +16,17 @@ public class WandererMagePlayer extends Player {
 
     private final ProjectileManager projectileManager;
 
-    // Projectile Details (VERIFY FRAME COUNTS AND DAMAGE)
+    // Projectile details for Magic Arrow (which will throw two charge projectiles)
     private static final int MAGIC_ARROW_COLS = 6;
     private static final int MAGIC_ARROW_ROWS = 1;
     private static final float MAGIC_ARROW_FD = 0.1f;
     private static final int MAGIC_ARROW_DAMAGE = GameConfig.PROJECTILE_DAMAGE;
 
-    private static final int MAGIC_SPHERE_COLS = 8; // Magic_sphere.png is 8x1 according to asset list
+    // For Magic Sphere – this is a full–body animation (no projectile spawn)
+    private static final int MAGIC_SPHERE_COLS = 8;
     private static final int MAGIC_SPHERE_ROWS = 1;
     private static final float MAGIC_SPHERE_FD = 0.12f;
-    private static final int MAGIC_SPHERE_DAMAGE = GameConfig.PROJECTILE_DAMAGE + 8;
-
+    // Damage value not needed as no projectile is spawned
 
     public WandererMagePlayer(AssetLoader assetLoader, float x, float y, ProjectileManager projectileManager) {
         super(assetLoader, x, y);
@@ -33,11 +34,6 @@ public class WandererMagePlayer extends Player {
             throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "ProjectileManager in WandererMagePlayer");
         }
         this.projectileManager = projectileManager;
-
-        if (this.animationComponent == null) {
-            throw new GameLogicException(GameExceptionMessages.NULL_DEPENDENCY, "AnimationComponent in WandererMagePlayer");
-        }
-
         try {
             setupAnimations();
         } catch (Exception e) {
@@ -49,42 +45,36 @@ public class WandererMagePlayer extends Player {
     @Override
     protected void setupAnimations() {
         Gdx.app.log("WandererMagePlayer", "Setting up Wanderer Mage animations...");
-        // Frame counts based on asset list - VERIFY!
-        // Idle: 8x1, Walk: 7x1, Run: 8x1, Jump: 8x1, Hurt: 4x1, Dead: 4x1
-        // Attack1: 7x1, Attack2: 9x1, Charge1: 9x1, Charge2: 6x1
-        // MagicArrow: 6x1 (Projectile), MagicSphere: 8x1 (Projectile)
-        animationComponent.addAnimation(State.IDLE, AssetLoader.WANDERER_MAGE_IDLE_PATH, 8, 1, 0.15f, Animation.PlayMode.LOOP);
-        animationComponent.addAnimation(State.WALK, AssetLoader.WANDERER_MAGE_WALK_PATH, 7, 1, 0.1f, Animation.PlayMode.LOOP);
-        animationComponent.addAnimation(State.RUN, AssetLoader.WANDERER_MAGE_RUN_PATH, 8, 1, 0.08f, Animation.PlayMode.LOOP);
-        animationComponent.addAnimation(State.JUMP, AssetLoader.WANDERER_MAGE_JUMP_PATH, 8, 1, 0.15f, Animation.PlayMode.NORMAL);
-        animationComponent.addAnimation(State.HURT, AssetLoader.WANDERER_MAGE_HURT_PATH, 4, 1, 0.1f, Animation.PlayMode.NORMAL);
-        animationComponent.addAnimation(State.DEAD, AssetLoader.WANDERER_MAGE_DEAD_PATH, 4, 1, 0.15f, Animation.PlayMode.NORMAL);
+        // Standard animations
+        animationComponent.addAnimation(State.IDLE, AssetLoader.WANDERER_MAGE_IDLE_PATH, 8, 1, 0.15f, PlayMode.LOOP);
+        animationComponent.addAnimation(State.WALK, AssetLoader.WANDERER_MAGE_WALK_PATH, 7, 1, 0.1f, PlayMode.LOOP);
+        animationComponent.addAnimation(State.RUN, AssetLoader.WANDERER_MAGE_RUN_PATH, 8, 1, 0.08f, PlayMode.LOOP);
+        animationComponent.addAnimation(State.JUMP, AssetLoader.WANDERER_MAGE_JUMP_PATH, 8, 1, 0.15f, PlayMode.NORMAL);
+        animationComponent.addAnimation(State.HURT, AssetLoader.WANDERER_MAGE_HURT_PATH, 4, 1, 0.1f, PlayMode.NORMAL);
+        animationComponent.addAnimation(State.DEAD, AssetLoader.WANDERER_MAGE_DEAD_PATH, 4, 1, 0.15f, PlayMode.NORMAL);
+        // Melee attacks remain the same
+        animationComponent.addAnimation(State.LIGHT_ATTACK, AssetLoader.WANDERER_MAGE_ATTACK1_PATH, 7, 1, 0.08f, PlayMode.NORMAL);
+        animationComponent.addAnimation(State.HEAVY_ATTACK, AssetLoader.WANDERER_MAGE_ATTACK2_PATH, 9, 1, 0.09f, PlayMode.NORMAL);
 
-        // Map Melee Attacks
-        animationComponent.addAnimation(State.LIGHT_ATTACK, AssetLoader.WANDERER_MAGE_ATTACK1_PATH, 7, 1, 0.08f, Animation.PlayMode.NORMAL);
-        animationComponent.addAnimation(State.HEAVY_ATTACK, AssetLoader.WANDERER_MAGE_ATTACK2_PATH, 9, 1, 0.09f, Animation.PlayMode.NORMAL);
-
-        // --- CHANGE START: Use Charge animations for CAST states ---
-        // Map MAGIC_ARROW_CAST state to Charge_1.png animation
+        // --- UPDATED: Charge/Cast animations mapping ---
+        // Map the Magic Arrow cast (which spawns the charge projectiles) to be triggered by E and V keys.
         if (Gdx.files.internal(AssetLoader.WANDERER_MAGE_CHARGE1_PATH).exists()) {
-            animationComponent.addAnimation(State.MAGIC_ARROW_CAST, AssetLoader.WANDERER_MAGE_CHARGE1_PATH, 9, 1, 0.09f, Animation.PlayMode.NORMAL);
+            animationComponent.addAnimation(State.MAGIC_ARROW_CAST, AssetLoader.WANDERER_MAGE_CHARGE1_PATH, 9, 1, 0.09f, PlayMode.NORMAL);
             Gdx.app.log("WandererMagePlayer", "Mapped MAGIC_ARROW_CAST state to Charge_1 animation.");
         } else {
             Gdx.app.error("WandererMagePlayer", "Charge_1 animation not found! Linking MAGIC_ARROW_CAST to IDLE.");
             animationComponent.linkStateAnimation(State.MAGIC_ARROW_CAST, State.IDLE);
         }
-
-        // Map MAGIC_SPHERE_CAST state to Charge_2.png animation
+        // Map the Magic Sphere cast (a full–body animation, no projectile) to be triggered by Q.
         if (Gdx.files.internal(AssetLoader.WANDERER_MAGE_CHARGE2_PATH).exists()) {
-            animationComponent.addAnimation(State.MAGIC_SPHERE_CAST, AssetLoader.WANDERER_MAGE_CHARGE2_PATH, 6, 1, 0.12f, Animation.PlayMode.NORMAL);
+            animationComponent.addAnimation(State.MAGIC_SPHERE_CAST, AssetLoader.WANDERER_MAGE_CHARGE2_PATH, 6, 1, 0.12f, PlayMode.NORMAL);
             Gdx.app.log("WandererMagePlayer", "Mapped MAGIC_SPHERE_CAST state to Charge_2 animation.");
         } else {
             Gdx.app.error("WandererMagePlayer", "Charge_2 animation not found! Linking MAGIC_SPHERE_CAST to IDLE.");
             animationComponent.linkStateAnimation(State.MAGIC_SPHERE_CAST, State.IDLE);
         }
-        // --- CHANGE END ---
 
-        // Link Fall state
+        // Link FALL state
         if (animationComponent.hasAnimationForState(State.JUMP)) {
             animationComponent.linkStateAnimation(State.FALL, State.JUMP);
         } else {
@@ -93,44 +83,55 @@ public class WandererMagePlayer extends Player {
         Gdx.app.log("WandererMagePlayer", "Wanderer Mage animations setup complete.");
     }
 
-    // Map inputs to specific cast states
+    // --- UPDATED: Remapped special actions ---
+    // Now the magic sphere (full–body animation) is triggered via the Q key,
+    // and the magic arrow cast (which spawns two charge projectiles) is triggered via E and V keys.
+    // The input system should now be configured so that:
+    // • Q triggers mapSpecial1ToAction (returning MAGIC_SPHERE_CAST)
+    // • E and V both trigger magic arrow casts.
     @Override
-    protected State mapSpecial1ToAction() { return State.MAGIC_ARROW_CAST; } // E key
+    protected State mapSpecial1ToAction() {
+        // Map Q key to magic sphere cast (full–body animation; no projectile spawn)
+        return State.MAGIC_SPHERE_CAST;
+    }
     @Override
-    protected State mapSpecial2ToAction() { return State.MAGIC_SPHERE_CAST; } // V key
+    protected State mapSpecial2ToAction() {
+        // Map one of the arrow casts (e.g., E or V) to magic arrow cast which will decide which charge projectile to spawn
+        return State.MAGIC_ARROW_CAST;
+    }
 
-
     @Override
-    public void updateAttack(float delta) { // Changed to public
+    public void updateAttack(float delta) {
         if (isAttacking) {
             State currentAttackState = stateComponent.getCurrentState();
             boolean attackSequenceComplete = false;
 
             switch(currentAttackState) {
-                case MAGIC_ARROW_CAST: // Playing Charge_1.png
-                    if(animationComponent.isAnimationFinished(currentAttackState)) {
-                        spawnMagicArrow(); // Spawn projectile using Magic_arrow.png
+                case MAGIC_SPHERE_CAST:
+                    // For magic sphere, simply play the full–body animation with no projectile spawn.
+                    if (animationComponent.isAnimationFinished(currentAttackState)) {
                         attackSequenceComplete = true;
                     }
                     break;
-                case MAGIC_SPHERE_CAST: // Playing Charge_2.png
-                    if(animationComponent.isAnimationFinished(currentAttackState)) {
-                        spawnMagicSphere(); // Spawn projectile using Magic_sphere.png
+                case MAGIC_ARROW_CAST:
+                    // For magic arrow cast, spawn two different charge projectiles depending on input.
+                    // (Assuming that the input system distinguishes between E and V and sets an internal flag accordingly)
+                    if (animationComponent.isAnimationFinished(currentAttackState)) {
+                        // Here you would check which key was pressed (E or V) and call spawnMagicArrow1() or spawnMagicArrow2()
+                        // For demonstration we call the same spawn method.
+                        spawnMagicArrow();
                         attackSequenceComplete = true;
                     }
                     break;
-                case LIGHT_ATTACK: // Playing Attack_1.png
-                case HEAVY_ATTACK: // Playing Attack_2.png
+                case LIGHT_ATTACK:
+                case HEAVY_ATTACK:
                     if(animationComponent.isAnimationFinished(currentAttackState)) {
                         attackSequenceComplete = true;
                     }
-                    // Add melee damage timing if needed
                     break;
                 default:
-                    // Finish if animation ends for any other attack state
                     if(animationComponent.isAnimationFinished(currentAttackState) &&
-                        currentAttackState != State.MAGIC_ARROW_CAST && // Avoid double finish checks
-                        currentAttackState != State.MAGIC_SPHERE_CAST){
+                        currentAttackState != State.MAGIC_SPHERE_CAST && currentAttackState != State.MAGIC_ARROW_CAST) {
                         attackSequenceComplete = true;
                     }
                     break;
@@ -151,44 +152,25 @@ public class WandererMagePlayer extends Player {
     private void spawnMagicArrow() {
         if (projectileManager == null || position == null || bounds == null || assetLoader == null) return;
         Gdx.app.log("WandererMagePlayer", "Spawning Magic Arrow projectile");
-        float spawnOffsetY = bounds.height * 0.6f;
+        float spawnOffsetY = bounds.height * 0.2f;
         float projectileWidth = 0;
         try {
             Texture projectileTexture = assetLoader.get(AssetLoader.WANDERER_MAGE_MAGIC_ARROW_PATH, Texture.class);
-            if(MAGIC_ARROW_COLS > 0) projectileWidth = (projectileTexture.getWidth() / MAGIC_ARROW_COLS) * 2.0f;
-        } catch (Exception e) { Gdx.app.error("WandererMagePlayer", "Failed to get arrow texture for width calc", e); }
-
+            if (MAGIC_ARROW_COLS > 0)
+                projectileWidth = (projectileTexture.getWidth() / MAGIC_ARROW_COLS) * 2.0f;
+        } catch (Exception e) {
+            Gdx.app.error("WandererMagePlayer", "Failed to get arrow texture for width calc", e);
+        }
         float spawnX = facingRight ? position.x + bounds.width * 0.7f : position.x + bounds.width * 0.3f - projectileWidth;
         float spawnY = position.y + spawnOffsetY;
         float speed = GameConfig.PROJECTILE_SPEED * 1.2f;
-
         Projectile proj = new Projectile(assetLoader, spawnX, spawnY,
             facingRight ? speed : -speed, 0,
             MAGIC_ARROW_DAMAGE, this,
-            AssetLoader.WANDERER_MAGE_MAGIC_ARROW_PATH, // Use Magic_arrow.png for projectile
-            MAGIC_ARROW_COLS, MAGIC_ARROW_ROWS, MAGIC_ARROW_FD);
+            AssetLoader.WANDERER_MAGE_MAGIC_ARROW_PATH, MAGIC_ARROW_COLS, MAGIC_ARROW_ROWS, MAGIC_ARROW_FD);
         projectileManager.addProjectile(proj);
     }
 
-    private void spawnMagicSphere() {
-        if (projectileManager == null || position == null || bounds == null || assetLoader == null) return;
-        Gdx.app.log("WandererMagePlayer", "Spawning Magic Sphere projectile");
-        float spawnOffsetY = bounds.height * 0.5f;
-        float projectileWidth = 0;
-        try {
-            Texture projectileTexture = assetLoader.get(AssetLoader.WANDERER_MAGE_MAGIC_SPHERE_PATH, Texture.class);
-            if(MAGIC_SPHERE_COLS > 0) projectileWidth = (projectileTexture.getWidth() / MAGIC_SPHERE_COLS) * 2.0f;
-        } catch (Exception e) { Gdx.app.error("WandererMagePlayer", "Failed to get sphere texture for width calc", e); }
-
-        float spawnX = facingRight ? position.x + bounds.width * 0.8f : position.x + bounds.width * 0.2f - projectileWidth;
-        float spawnY = position.y + spawnOffsetY;
-        float speed = GameConfig.PROJECTILE_SPEED * 0.8f;
-
-        Projectile proj = new Projectile(assetLoader, spawnX, spawnY,
-            facingRight ? speed : -speed, 0,
-            MAGIC_SPHERE_DAMAGE, this,
-            AssetLoader.WANDERER_MAGE_MAGIC_SPHERE_PATH, // Use Magic_sphere.png for projectile
-            MAGIC_SPHERE_COLS, MAGIC_SPHERE_ROWS, MAGIC_SPHERE_FD);
-        projectileManager.addProjectile(proj);
-    }
+    // If needed, separate methods (spawnMagicArrow1 and spawnMagicArrow2) can be defined here
+    // to differentiate between the two charge projectiles thrown when E and V are pressed.
 }

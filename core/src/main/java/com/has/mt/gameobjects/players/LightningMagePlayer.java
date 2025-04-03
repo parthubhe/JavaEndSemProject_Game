@@ -105,13 +105,7 @@ public class LightningMagePlayer extends Player {
                     }
                     break;
 
-                // --- CHANGE START: Remove explicit LIGHTNING_BALL_CAST handling here ---
-                // case LIGHTNING_BALL_CAST:
-                //    // This state is now handled implicitly by the completion logic below
-                //    // as it's linked to IDLE which never "finishes" in the traditional sense.
-                //    // The sequence completes immediately after entering it from CHARGED.
-                //    break;
-                // --- CHANGE END ---
+
 
                 case LIGHT_ATTACK:
                 case HEAVY_ATTACK:

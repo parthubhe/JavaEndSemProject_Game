@@ -86,7 +86,7 @@ public class AssetLoader {
     public static final String WANDERER_MAGE_CHARGE1_PATH = WANDERER_MAGE_BASE_PATH + "Charge_1.png"; // ?x1
     public static final String WANDERER_MAGE_CHARGE2_PATH = WANDERER_MAGE_BASE_PATH + "Charge_2.png"; // ?x1
     public static final String WANDERER_MAGE_MAGIC_ARROW_PATH = WANDERER_MAGE_BASE_PATH + "Magic_arrow.png"; // 6x1? (Projectile anim)
-    public static final String WANDERER_MAGE_MAGIC_SPHERE_PATH = WANDERER_MAGE_BASE_PATH + "Magic_sphere.png"; // 8x1? (Projectile anim)
+    public static final String WANDERER_MAGE_MAGIC_SPHERE_PATH = WANDERER_MAGE_BASE_PATH + "Magic_sphere.png"; // 8x1? [Similar sprite sheet as vader strike)
 
     // Samurai
     public static final String SAMURAI_IDLE_PATH = SAMURAI_BASE_PATH + "Idle.png"; // 6x1?
