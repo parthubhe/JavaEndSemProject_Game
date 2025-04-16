@@ -1,0 +1,383 @@
+Audio/firesound.mp3
+Audio/swing.mp3
+Backgrounds/Castle/COUPON.pdf
+Backgrounds/Castle/COUPON.png
+Backgrounds/Castle/Free Assets Craftpix!.url
+Backgrounds/Castle/License.txt
+Backgrounds/Castle/PNG/background 1/Plan 1.png
+Backgrounds/Castle/PNG/background 1/Plan 2.png
+Backgrounds/Castle/PNG/background 1/Plan 3.png
+Backgrounds/Castle/PNG/background 1/Preview 1.png
+Backgrounds/Castle/PNG/background 1/background 1.png
+Backgrounds/Castle/PNG/background 2/Plan 1.png
+Backgrounds/Castle/PNG/background 2/Plan 2.png
+Backgrounds/Castle/PNG/background 2/Plan 3.png
+Backgrounds/Castle/PNG/background 2/Plan 4.png
+Backgrounds/Castle/PNG/background 2/Preview 2.png
+Backgrounds/Castle/PNG/background 2/background 2.png
+Backgrounds/Castle/PNG/background 3/Plan 1.png
+Backgrounds/Castle/PNG/background 3/Plan 2.png
+Backgrounds/Castle/PNG/background 3/Plan 3.png
+Backgrounds/Castle/PNG/background 3/Plan 4.png
+Backgrounds/Castle/PNG/background 3/Preview 3.png
+Backgrounds/Castle/PNG/background 3/background 3.png
+Backgrounds/Castle/PNG/background 4/Plan 1.png
+Backgrounds/Castle/PNG/background 4/Plan 2.png
+Backgrounds/Castle/PNG/background 4/Plan 3.png
+Backgrounds/Castle/PNG/background 4/Preview 4.png
+Backgrounds/Castle/PNG/background 4/background 4.png
+Backgrounds/Castle/PSD/background 1.psd
+Backgrounds/Castle/PSD/background 2.psd
+Backgrounds/Castle/PSD/background 3.psd
+Backgrounds/Castle/PSD/background 4.psd
+Backgrounds/Castle/readme.txt
+Backgrounds/Winter/Layered/License.txt
+Backgrounds/Winter/Layered/winter 1/1.png
+Backgrounds/Winter/Layered/winter 1/2.png
+Backgrounds/Winter/Layered/winter 1/3.png
+Backgrounds/Winter/Layered/winter 1/4.png
+Backgrounds/Winter/Layered/winter 1/5.png
+Backgrounds/Winter/Layered/winter 1/6.png
+Backgrounds/Winter/Layered/winter 1/7.png
+Backgrounds/Winter/Layered/winter 1/hd.png
+Backgrounds/Winter/Layered/winter 2/1.png
+Backgrounds/Winter/Layered/winter 2/2.png
+Backgrounds/Winter/Layered/winter 2/3.png
+Backgrounds/Winter/Layered/winter 2/4.png
+Backgrounds/Winter/Layered/winter 2/5.png
+Backgrounds/Winter/Layered/winter 2/6.png
+Backgrounds/Winter/Layered/winter 2/hd.png
+Backgrounds/Winter/Layered/winter 3/1.png
+Backgrounds/Winter/Layered/winter 3/2.png
+Backgrounds/Winter/Layered/winter 3/3.png
+Backgrounds/Winter/Layered/winter 3/4.png
+Backgrounds/Winter/Layered/winter 3/hd.png
+Backgrounds/Winter/Layered/winter 4/1.png
+Backgrounds/Winter/Layered/winter 4/2.png
+Backgrounds/Winter/Layered/winter 4/3.png
+Backgrounds/Winter/Layered/winter 4/4.png
+Backgrounds/Winter/Layered/winter 4/hd.png
+Backgrounds/Winter/Layered/winter 5/1.png
+Backgrounds/Winter/Layered/winter 5/10.png
+Backgrounds/Winter/Layered/winter 5/11.png
+Backgrounds/Winter/Layered/winter 5/2.png
+Backgrounds/Winter/Layered/winter 5/3.png
+Backgrounds/Winter/Layered/winter 5/4.png
+Backgrounds/Winter/Layered/winter 5/5.png
+Backgrounds/Winter/Layered/winter 5/6.png
+Backgrounds/Winter/Layered/winter 5/7.png
+Backgrounds/Winter/Layered/winter 5/8.png
+Backgrounds/Winter/Layered/winter 5/9.png
+Backgrounds/Winter/Layered/winter 5/hd.png
+Backgrounds/Winter/Layered/winter 6/1.png
+Backgrounds/Winter/Layered/winter 6/2.png
+Backgrounds/Winter/Layered/winter 6/3.png
+Backgrounds/Winter/Layered/winter 6/4.png
+Backgrounds/Winter/Layered/winter 6/hd.png
+Backgrounds/Winter/Layered/winter 7/1.png
+Backgrounds/Winter/Layered/winter 7/2.png
+Backgrounds/Winter/Layered/winter 7/3.png
+Backgrounds/Winter/Layered/winter 7/4.png
+Backgrounds/Winter/Layered/winter 7/hd.png
+Backgrounds/Winter/Layered/winter 8/1.png
+Backgrounds/Winter/Layered/winter 8/2.png
+Backgrounds/Winter/Layered/winter 8/3.png
+Backgrounds/Winter/Layered/winter 8/4.png
+Backgrounds/Winter/Layered/winter 8/hd.png
+Backgrounds/Winter/Layered/winter_previev/1.psd
+Backgrounds/Winter/Layered/winter_previev/2.psd
+Backgrounds/Winter/Layered/winter_previev/3.psd
+Backgrounds/Winter/Layered/winter_previev/4.psd
+Backgrounds/Winter/Layered/winter_previev/5.psd
+Backgrounds/Winter/Layered/winter_previev/6.psd
+Backgrounds/Winter/Layered/winter_previev/7.psd
+Backgrounds/Winter/Layered/winter_previev/8.psd
+Characters/Knight/COUPON.pdf
+Characters/Knight/COUPON.png
+Characters/Knight/Font.txt
+Characters/Knight/Free Assets Craftpix!.url
+Characters/Knight/Knight_1/Attack 1.png
+Characters/Knight/Knight_1/Attack 2.png
+Characters/Knight/Knight_1/Attack 3.png
+Characters/Knight/Knight_1/Dead.png
+Characters/Knight/Knight_1/Defend.png
+Characters/Knight/Knight_1/Hurt.png
+Characters/Knight/Knight_1/Idle.png
+Characters/Knight/Knight_1/Jump.png
+Characters/Knight/Knight_1/Protect.png
+Characters/Knight/Knight_1/Run+Attack.png
+Characters/Knight/Knight_1/Run.png
+Characters/Knight/Knight_1/Walk.png
+Characters/Knight/Knight_2/Attack 1.png
+Characters/Knight/Knight_2/Attack 2.png
+Characters/Knight/Knight_2/Attack 3.png
+Characters/Knight/Knight_2/Dead.png
+Characters/Knight/Knight_2/Defend.png
+Characters/Knight/Knight_2/Hurt.png
+Characters/Knight/Knight_2/Idle.png
+Characters/Knight/Knight_2/Jump.png
+Characters/Knight/Knight_2/Protect.png
+Characters/Knight/Knight_2/Run+Attack.png
+Characters/Knight/Knight_2/Run.png
+Characters/Knight/Knight_2/Walk.png
+Characters/Knight/Knight_3/Attack 1.png
+Characters/Knight/Knight_3/Attack 2.png
+Characters/Knight/Knight_3/Attack 3.png
+Characters/Knight/Knight_3/Dead.png
+Characters/Knight/Knight_3/Defend.png
+Characters/Knight/Knight_3/Hurt.png
+Characters/Knight/Knight_3/Idle.png
+Characters/Knight/Knight_3/Jump.png
+Characters/Knight/Knight_3/Protect.png
+Characters/Knight/Knight_3/Run+Attack.png
+Characters/Knight/Knight_3/Run.png
+Characters/Knight/Knight_3/Walk.png
+Characters/Knight/License.txt
+Characters/Knight/PSD/knight_1_spritelist.psd
+Characters/Knight/PSD/knight_2_spritelist.psd
+Characters/Knight/PSD/knight_3_spritelist.psd
+Characters/Knight/Spritesheet 128/Knight_1/Attack 1.png
+Characters/Knight/Spritesheet 128/Knight_1/Attack 2.png
+Characters/Knight/Spritesheet 128/Knight_1/Attack 3.png
+Characters/Knight/Spritesheet 128/Knight_1/Dead.png
+Characters/Knight/Spritesheet 128/Knight_1/Defend.png
+Characters/Knight/Spritesheet 128/Knight_1/Hurt.png
+Characters/Knight/Spritesheet 128/Knight_1/Idle.png
+Characters/Knight/Spritesheet 128/Knight_1/Jump.png
+Characters/Knight/Spritesheet 128/Knight_1/Protect.png
+Characters/Knight/Spritesheet 128/Knight_1/Run+Attack.png
+Characters/Knight/Spritesheet 128/Knight_1/Run.png
+Characters/Knight/Spritesheet 128/Knight_1/Walk.png
+Characters/Knight/Spritesheet 128/Knight_2/Attack 1.png
+Characters/Knight/Spritesheet 128/Knight_2/Attack 2.png
+Characters/Knight/Spritesheet 128/Knight_2/Attack 3.png
+Characters/Knight/Spritesheet 128/Knight_2/Dead.png
+Characters/Knight/Spritesheet 128/Knight_2/Defend.png
+Characters/Knight/Spritesheet 128/Knight_2/Hurt.png
+Characters/Knight/Spritesheet 128/Knight_2/Idle.png
+Characters/Knight/Spritesheet 128/Knight_2/Jump.png
+Characters/Knight/Spritesheet 128/Knight_2/Protect.png
+Characters/Knight/Spritesheet 128/Knight_2/Run+Attack.png
+Characters/Knight/Spritesheet 128/Knight_2/Run.png
+Characters/Knight/Spritesheet 128/Knight_2/Walk.png
+Characters/Knight/Spritesheet 128/Knight_3/Attack 1.png
+Characters/Knight/Spritesheet 128/Knight_3/Attack 2.png
+Characters/Knight/Spritesheet 128/Knight_3/Attack 3.png
+Characters/Knight/Spritesheet 128/Knight_3/Dead.png
+Characters/Knight/Spritesheet 128/Knight_3/Defend.png
+Characters/Knight/Spritesheet 128/Knight_3/Hurt.png
+Characters/Knight/Spritesheet 128/Knight_3/Idle.png
+Characters/Knight/Spritesheet 128/Knight_3/Jump.png
+Characters/Knight/Spritesheet 128/Knight_3/Protect.png
+Characters/Knight/Spritesheet 128/Knight_3/Run+Attack.png
+Characters/Knight/Spritesheet 128/Knight_3/Run.png
+Characters/Knight/Spritesheet 128/Knight_3/Walk.png
+Characters/Mage/COUPON.pdf
+Characters/Mage/COUPON.png
+Characters/Mage/Fire vizard/Attack_1.png
+Characters/Mage/Fire vizard/Attack_2.png
+Characters/Mage/Fire vizard/Charge.png
+Characters/Mage/Fire vizard/Dead.png
+Characters/Mage/Fire vizard/Fireball.png
+Characters/Mage/Fire vizard/Flame_jet.png
+Characters/Mage/Fire vizard/Hurt.png
+Characters/Mage/Fire vizard/Idle.png
+Characters/Mage/Fire vizard/Jump.png
+Characters/Mage/Fire vizard/Run.png
+Characters/Mage/Fire vizard/Walk.png
+Characters/Mage/Font.txt
+Characters/Mage/Free Assets Craftpix!.url
+Characters/Mage/Licens.txt
+Characters/Mage/Lightning Mage/Attack_1.png
+Characters/Mage/Lightning Mage/Attack_2.png
+Characters/Mage/Lightning Mage/Dead.png
+Characters/Mage/Lightning Mage/Hurt.png
+Characters/Mage/Lightning Mage/Idle.png
+Characters/Mage/Lightning Mage/Jump.png
+Characters/Mage/Lightning Mage/Light_ball.png
+Characters/Mage/Lightning Mage/Light_charge.png
+Characters/Mage/Lightning Mage/Run.png
+Characters/Mage/Lightning Mage/Walk.png
+Characters/Mage/PSD/Fire_Mage_Spritelist.psd
+Characters/Mage/PSD/Light_Mage_Spritelist.psd
+Characters/Mage/PSD/Wanderer_Magican_Spritelist.psd
+Characters/Mage/Wanderer Magican/Attack_1.png
+Characters/Mage/Wanderer Magican/Attack_2.png
+Characters/Mage/Wanderer Magican/Charge_1.png
+Characters/Mage/Wanderer Magican/Charge_2.png
+Characters/Mage/Wanderer Magican/Dead.png
+Characters/Mage/Wanderer Magican/Hurt.png
+Characters/Mage/Wanderer Magican/Idle.png
+Characters/Mage/Wanderer Magican/Jump.png
+Characters/Mage/Wanderer Magican/Magic_arrow.png
+Characters/Mage/Wanderer Magican/Magic_sphere.png
+Characters/Mage/Wanderer Magican/Run.png
+Characters/Mage/Wanderer Magican/Walk.png
+Characters/Samurai/COUPON.pdf
+Characters/Samurai/COUPON.png
+Characters/Samurai/Font.txt
+Characters/Samurai/Free Assets Craftpix!.url
+Characters/Samurai/Licens.txt
+Characters/Samurai/PSD/Samurai_Archer_Spritelist.psd
+Characters/Samurai/PSD/Samurai_Commander_Spritelist.psd
+Characters/Samurai/PSD/Samurai_Spritelist.psd
+Characters/Samurai/Samurai/Attack_1.png
+Characters/Samurai/Samurai/Attack_2.png
+Characters/Samurai/Samurai/Attack_3.png
+Characters/Samurai/Samurai/Dead.png
+Characters/Samurai/Samurai/Hurt.png
+Characters/Samurai/Samurai/Idle.png
+Characters/Samurai/Samurai/Jump.png
+Characters/Samurai/Samurai/Protection.png
+Characters/Samurai/Samurai/Run.png
+Characters/Samurai/Samurai/Walk.png
+Characters/Samurai/Samurai_Archer/Arrow.png
+Characters/Samurai/Samurai_Archer/Attack_1.png
+Characters/Samurai/Samurai_Archer/Attack_2.png
+Characters/Samurai/Samurai_Archer/Attack_3.png
+Characters/Samurai/Samurai_Archer/Dead.png
+Characters/Samurai/Samurai_Archer/Hurt.png
+Characters/Samurai/Samurai_Archer/Idle.png
+Characters/Samurai/Samurai_Archer/Jump.png
+Characters/Samurai/Samurai_Archer/Run.png
+Characters/Samurai/Samurai_Archer/Shot.png
+Characters/Samurai/Samurai_Archer/Walk.png
+Characters/Samurai/Samurai_Commander/Attack_1.png
+Characters/Samurai/Samurai_Commander/Attack_2.png
+Characters/Samurai/Samurai_Commander/Attack_3.png
+Characters/Samurai/Samurai_Commander/Dead.png
+Characters/Samurai/Samurai_Commander/Hurt.png
+Characters/Samurai/Samurai_Commander/Idle.png
+Characters/Samurai/Samurai_Commander/Jump.png
+Characters/Samurai/Samurai_Commander/Protect.png
+Characters/Samurai/Samurai_Commander/Run.png
+Characters/Samurai/Samurai_Commander/Walk.png
+Enemy/Dragon/d1-removebg-preview.png
+Enemy/Dragon/d1.jpg
+Enemy/Dragon/d2-removebg-preview.png
+Enemy/Dragon/d2.jpg
+Enemy/Minotaur/COUPON.pdf
+Enemy/Minotaur/COUPON.png
+Enemy/Minotaur/Font.txt
+Enemy/Minotaur/Free Assets Craftpix!.url
+Enemy/Minotaur/Licens.txt
+Enemy/Minotaur/Minotaur_1/Attack.png
+Enemy/Minotaur/Minotaur_1/Dead.png
+Enemy/Minotaur/Minotaur_1/Hurt.png
+Enemy/Minotaur/Minotaur_1/Idle.png
+Enemy/Minotaur/Minotaur_1/Walk.png
+Enemy/Minotaur/Minotaur_2/Attack.png
+Enemy/Minotaur/Minotaur_2/Dead.png
+Enemy/Minotaur/Minotaur_2/Hurt.png
+Enemy/Minotaur/Minotaur_2/Idle.png
+Enemy/Minotaur/Minotaur_2/Walk.png
+Enemy/Minotaur/Minotaur_3/Attack.png
+Enemy/Minotaur/Minotaur_3/Dead.png
+Enemy/Minotaur/Minotaur_3/Hurt.png
+Enemy/Minotaur/Minotaur_3/Idle.png
+Enemy/Minotaur/Minotaur_3/Walk.png
+Enemy/Minotaur/PSD/Minotaur_1_Spritelist.psd
+Enemy/Minotaur/PSD/Minotaur_2_Spritelist.psd
+Enemy/Minotaur/PSD/Minotaur_3_Spritelist.psd
+Enemy/SkeletonEnemy/COUPON.pdf
+Enemy/SkeletonEnemy/COUPON.png
+Enemy/SkeletonEnemy/Font.txt
+Enemy/SkeletonEnemy/Free Assets Craftpix!.url
+Enemy/SkeletonEnemy/Licens.txt
+Enemy/SkeletonEnemy/PSD/Skeleton_Archer_Spritelist.psd
+Enemy/SkeletonEnemy/PSD/Skeleton_Spearman_Spritelist.psd
+Enemy/SkeletonEnemy/PSD/Skeleton_Warrior_Spritelist.psd
+Enemy/SkeletonEnemy/Skeleton_Archer/Arrow.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Attack_1.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Attack_2.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Attack_3.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Dead.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Evasion.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Hurt.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Idle.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Shot_1.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Shot_2.png
+Enemy/SkeletonEnemy/Skeleton_Archer/Walk.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Attack_1.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Attack_2.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Dead.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Fall.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Hurt.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Idle.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Protect.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Run+attack.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Run.png
+Enemy/SkeletonEnemy/Skeleton_Spearman/Walk.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Attack_1.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Attack_2.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Attack_3.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Dead.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Hurt.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Idle.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Protect.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Run+attack.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Run.png
+Enemy/SkeletonEnemy/Skeleton_Warrior/Walk.png
+Enemy/SlimeEnemy/Blue_Slime/Attack_1.png
+Enemy/SlimeEnemy/Blue_Slime/Attack_2.png
+Enemy/SlimeEnemy/Blue_Slime/Attack_3.png
+Enemy/SlimeEnemy/Blue_Slime/Dead.png
+Enemy/SlimeEnemy/Blue_Slime/Hurt.png
+Enemy/SlimeEnemy/Blue_Slime/Idle.png
+Enemy/SlimeEnemy/Blue_Slime/Jump.png
+Enemy/SlimeEnemy/Blue_Slime/Run+Attack.png
+Enemy/SlimeEnemy/Blue_Slime/Run.png
+Enemy/SlimeEnemy/Blue_Slime/walk.png
+Enemy/SlimeEnemy/COUPON.pdf
+Enemy/SlimeEnemy/COUPON.png
+Enemy/SlimeEnemy/Font.txt
+Enemy/SlimeEnemy/Free Assets Craftpix!.url
+Enemy/SlimeEnemy/Green_Slime/Attack_1.png
+Enemy/SlimeEnemy/Green_Slime/Attack_2.png
+Enemy/SlimeEnemy/Green_Slime/Attack_3.png
+Enemy/SlimeEnemy/Green_Slime/Dead.png
+Enemy/SlimeEnemy/Green_Slime/Hurt.png
+Enemy/SlimeEnemy/Green_Slime/Idle.png
+Enemy/SlimeEnemy/Green_Slime/Jump.png
+Enemy/SlimeEnemy/Green_Slime/Run+Attack.png
+Enemy/SlimeEnemy/Green_Slime/Run.png
+Enemy/SlimeEnemy/Green_Slime/Walk.png
+Enemy/SlimeEnemy/Licens.txt
+Enemy/SlimeEnemy/PSD/Blue_Slime_Spritelist.psd
+Enemy/SlimeEnemy/PSD/Green_Slime_Spritelist.psd
+Enemy/SlimeEnemy/PSD/Red_Slime_Spritelist.psd
+Enemy/SlimeEnemy/Red_Slime/Attack_1.png
+Enemy/SlimeEnemy/Red_Slime/Attack_2.png
+Enemy/SlimeEnemy/Red_Slime/Attack_3.png
+Enemy/SlimeEnemy/Red_Slime/Dead.png
+Enemy/SlimeEnemy/Red_Slime/Hurt.png
+Enemy/SlimeEnemy/Red_Slime/Idle.png
+Enemy/SlimeEnemy/Red_Slime/Jump.png
+Enemy/SlimeEnemy/Red_Slime/Run+Attack.png
+Enemy/SlimeEnemy/Red_Slime/Run.png
+Enemy/SlimeEnemy/Red_Slime/Walk.png
+FloorTextures/Textures-16.png
+Knight/Knight_1/Attack 1.png
+Knight/Knight_1/Attack 2.png
+Knight/Knight_1/Attack 3.png
+Knight/Knight_1/Dead.png
+Knight/Knight_1/Defend.png
+Knight/Knight_1/Hurt.png
+Knight/Knight_1/Idle.png
+Knight/Knight_1/Jump.png
+Knight/Knight_1/Protect.png
+Knight/Knight_1/Run+Attack.png
+Knight/Knight_1/Run.png
+Knight/Knight_1/Walk.png
+Movement/Walk/LM_Charge.png
+Movement/Walk/LM_Chargeball.png
+Movement/Walk/LM_Dead.png
+Movement/Walk/LM_HeavyAttack.png
+Movement/Walk/LM_Hurt.png
+Movement/Walk/LM_Idle.png
+Movement/Walk/LM_Jump.png
+Movement/Walk/LM_LightAttack.png
+Movement/Walk/LM_Run.png
+Movement/Walk/LM_VaderStrike.png
+Movement/Walk/LM_Walk.png
+libgdx.png
