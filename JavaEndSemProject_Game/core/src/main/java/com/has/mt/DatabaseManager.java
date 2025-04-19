@@ -4,45 +4,49 @@ import java.sql.*;
 import java.util.Properties;
 
 public class DatabaseManager {
-    private static DatabaseManager instance;
-    private Connection connection;
-    // Use the same database name as your Workbench connection.
-    private final String HOST = "jdbc:mysql://localhost:3306/";
-    private final String DB_NAME = "gamedb";
-    private final String DB_URL = HOST + DB_NAME + "?useSSL=false&serverTimezone=UTC";
-    private final String USER = "root";
-    private final String PASS = "P@rthubh3";  // Empty password
 
-    // Private constructor for singleton
+    // singleton instance
+    private static DatabaseManager instance;
+
+    // JDBC connection
+    private Connection connection;
+
+    // database credentials
+    private static final String HOST = "jdbc:mysql://localhost:3306/";
+    private static final String DB_NAME = "gamedb";
+    private static final String USER = "root";
+    private static final String PASS = "P@rthubh3"; // subject to change 
+
+    // full DB URL with parameters
+    private static final String DB_URL = HOST + DB_NAME + "?useSSL=false&serverTimezone=UTC";
+
+    // private constructor - initializes DB connection
     private DatabaseManager() {
         try {
-            // Load the MySQL JDBC driver (ensure it's in your classpath)
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            // Create properties for connection (explicitly set empty password)
             Properties props = new Properties();
             props.setProperty("user", USER);
             props.setProperty("password", PASS);
 
-            // Optionally, you can include additional properties if needed:
-            // props.setProperty("allowPublicKeyRetrieval", "true");
-
-            // Optionally, if you want to create the database if it doesn't exist, you can connect to the server first:
-            Connection tempConnection = DriverManager.getConnection(HOST + "?useSSL=false&serverTimezone=UTC", props);
-            try (Statement stmt = tempConnection.createStatement()) {
+            // connect to server (without DB) first to ensure DB exists
+            try (Connection tempConn = DriverManager.getConnection(HOST + "?useSSL=false&serverTimezone=UTC", props);
+                 Statement stmt = tempConn.createStatement()) {
                 stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + DB_NAME);
             }
-            tempConnection.close();
 
-            // Now connect to the specified database
+            // connect to the target database
             connection = DriverManager.getConnection(DB_URL, props);
+
+            // initialize tables if needed
             initializeDatabase();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Singleton instance getter
+    // singleton instance getter
     public static DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
@@ -50,24 +54,26 @@ public class DatabaseManager {
         return instance;
     }
 
-    // Create the players table if it doesn't exist
-    public void initializeDatabase() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS players ("
-            + "id INT AUTO_INCREMENT PRIMARY KEY,"
-            + "name VARCHAR(100) UNIQUE,"
-            + "killCount INT"
-            + ");";
+    // ensures the `players` table exists
+    private void initializeDatabase() {
+        final String sql = "CREATE TABLE IF NOT EXISTS players ("
+                + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "name VARCHAR(100) UNIQUE, "
+                + "killCount INT"
+                + ");";
+
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(createTableSQL);
+            stmt.execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Add a new player with initial killCount
+    // inserts a new player into the table
     public void addPlayer(String name, int killCount) {
-        String insertSQL = "INSERT IGNORE INTO players(name, killCount) VALUES(?, ?);";
-        try (PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
+        final String sql = "INSERT IGNORE INTO players(name, killCount) VALUES(?, ?);";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, name);
             pstmt.setInt(2, killCount);
             pstmt.executeUpdate();
@@ -76,10 +82,11 @@ public class DatabaseManager {
         }
     }
 
-    // Update player's kill count
+    // updates kill count for a specific player
     public void updateKillCount(String name, int killCount) {
-        String updateSQL = "UPDATE players SET killCount = ? WHERE name = ?;";
-        try (PreparedStatement pstmt = connection.prepareStatement(updateSQL)) {
+        final String sql = "UPDATE players SET killCount = ? WHERE name = ?;";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, killCount);
             pstmt.setString(2, name);
             pstmt.executeUpdate();
@@ -88,25 +95,30 @@ public class DatabaseManager {
         }
     }
 
-    // Retrieve player's kill count
+    // fetches kill count for a given player
     public int getKillCount(String name) {
-        String querySQL = "SELECT killCount FROM players WHERE name = ?;";
-        try (PreparedStatement pstmt = connection.prepareStatement(querySQL)) {
+        final String sql = "SELECT killCount FROM players WHERE name = ?;";
+        int kills = 0;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, name);
             ResultSet rs = pstmt.executeQuery();
+
             if (rs.next()) {
-                return rs.getInt("killCount");
+                kills = rs.getInt("killCount");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0;
+
+        return kills;
     }
 
-    // Close connection when done
+    // closes the database connection
     public void close() {
         try {
-            if (connection != null && !connection.isClosed()){
+            if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
         } catch (SQLException e) {
