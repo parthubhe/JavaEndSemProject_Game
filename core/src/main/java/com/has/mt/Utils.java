@@ -5,18 +5,16 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import java.util.ArrayList;
 
 public class Utils {
-    // Toggle debug bounding-box outlines and detection-range circles
     public static final boolean DEBUG_HITBOXES = true;
 
     /**
-     * Draws the player's health bar, each enemy's health bar,
-     * and (if enabled) bounding box outlines and detection range circles.
+     * draws the player health bar, enemy health bar
      */
     public static void drawHUD(
-        BackgroundViewportManager viewportManager,
-        ShapeRenderer shapeRenderer,
+                ShapeRenderer shapeRenderer,
         float playerX, float playerY,
         TextureRegion playerFrame,
+        BackgroundViewportManager viewportManager,
         int playerHealth,
         ArrayList<Enemy> enemies
     ) {
@@ -34,18 +32,17 @@ public class Utils {
 
         // --- Enemies' Health Bars ---
         for (Enemy enemy : enemies) {
-            // Each enemy has its own x, y, health, etc.
+
+            float enemyBarWidth = 50f;
+            float enemyBarHeight = 8f;
+            float enemyBarX = ex + 0f;
+            float enemyBarY = ey + 50f; 
+
             float ex = enemy.getX();
             float ey = enemy.getY();
             int eHealth = enemy.getHealth();
 
-            // Position the bar above the enemy's sprite (tweak as needed)
-            float enemyBarWidth = 50f;
-            float enemyBarHeight = 8f;
-            float enemyBarX = ex + 0f;
-            float enemyBarY = ey + 50f; // "50f" is a vertical offset; adjust to taste
 
-            // Health portion in green
             shapeRenderer.setColor(0, 1, 0, 1);
             shapeRenderer.rect(
                 enemyBarX,
@@ -57,7 +54,7 @@ public class Utils {
 
         shapeRenderer.end();
 
-        // 2) If debug is enabled, draw bounding boxes and detection ranges as OUTLINES
+
         if (DEBUG_HITBOXES) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             shapeRenderer.setColor(1, 0, 0, 1); // red
@@ -72,8 +69,8 @@ public class Utils {
 
             // --- Enemies' bounding boxes + detection range circles ---
             for (Enemy enemy : enemies) {
-                float ex = enemy.getX();
                 float ey = enemy.getY();
+                float ex = enemy.getX();
                 float range = enemy.getDetectRange();
 
                 // Outline the enemy's bounding box
@@ -83,13 +80,11 @@ public class Utils {
                 // TextureRegion enemyFrame = enemy.getCurrentFrame(); // hypothetical method
                 // shapeRenderer.rect(ex, ey, enemyFrame.getRegionWidth(), enemyFrame.getRegionHeight());
 
-
+                // Outline the detection range circle
+                shapeRenderer.circle(ex + 32, ey + 32, range);
                 // Outline the enemy's bounding box
                 shapeRenderer.rect(ex, ey, enemy.getWidth() -324, enemy.getHeight() -324);
 
-
-                // Outline the detection range circle
-                shapeRenderer.circle(ex + 32, ey + 32, range);
             }
 
             shapeRenderer.end();
