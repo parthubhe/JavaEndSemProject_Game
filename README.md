@@ -119,3 +119,4 @@ The `assets/` directory (typically located alongside `core`, or configured in Gr
 
 [![Watch Demo](https://img.shields.io/badge/Watch-Demo-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=YOUR_YOUTUBE_VIDEO_ID)
 
+## Assets were fetched from craftpix.net, all the credits for the sprite sheets and backgrounds go to their original creators and this is only for non commmerical demonstration and use.
