@@ -5,10 +5,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/**
- * Manages multiple animations (idle, walk, jump, run, attacks, lightning strike, hurt, dead)
- * and their individual timers.
- */
 public class Animator {
 
     public enum State {
@@ -25,7 +21,7 @@ public class Animator {
         DEAD
     }
 
-    // Animation objects
+    // animation objects
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> walkAnimation;
     private Animation<TextureRegion> jumpAnimation;
@@ -37,6 +33,19 @@ public class Animator {
     private Animation<TextureRegion> vaderStrikeAnimation;
     private Animation<TextureRegion> hurtAnimation;
     private Animation<TextureRegion> deadAnimation;
+
+        // Textures for disposal
+    private Texture idleTexture;
+    private Texture walkTexture;
+    private Texture jumpTexture;
+    private Texture runTexture;
+    private Texture lightAttackTexture;
+    private Texture heavyAttackTexture;
+    private Texture chargedTexture;
+    private Texture lightningBallTexture;
+    private Texture vaderStrikeTexture;
+    private Texture hurtTexture;
+    private Texture deadTexture;
 
     // Animation timers
     private float idleTime = 0f;
@@ -52,18 +61,7 @@ public class Animator {
     private float hurtTime = 0f;
     private float deadTime = 0f;
 
-    // Textures for disposal
-    private Texture idleTexture;
-    private Texture walkTexture;
-    private Texture jumpTexture;
-    private Texture runTexture;
-    private Texture lightAttackTexture;
-    private Texture heavyAttackTexture;
-    private Texture chargedTexture;
-    private Texture lightningBallTexture;
-    private Texture vaderStrikeTexture;
-    private Texture hurtTexture;
-    private Texture deadTexture;
+
 
     public Animator() {
         // 1) IDLE animation: "LM_Idle.png" (example: 7 frames in 1 row)
@@ -276,17 +274,11 @@ public class Animator {
     public void resetVaderStrike() {
         vaderStrikeTime = 0f;
     }
-    /**
-     * Reset the CHARGED timer.
-     * Now the CHARGED animation will automatically end after playing 2 loops.
-     */
-    public void resetCharged() {
-        chargedTime = 0f;
-    }
 
     /**
      * Dispose of all textures.
      */
+
     public void dispose() {
         idleTexture.dispose();
         walkTexture.dispose();
@@ -301,3 +293,14 @@ public class Animator {
         deadTexture.dispose();
     }
 }
+
+    
+    /**
+     * Reset the CHARGED timer.
+     * Now the CHARGED animation will automatically end after playing 2 loops.
+     */
+    public void resetCharged() {
+        chargedTime = 0f;
+    }
+
+

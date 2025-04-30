@@ -26,15 +26,17 @@ public class BackgroundViewportManager {
         camera.update();
     }
 
-    public void apply() {
-        viewport.apply();
+        public Viewport getViewport() {
+        return viewport;
     }
+
 
     public OrthographicCamera getCamera() {
         return camera;
     }
 
-    public Viewport getViewport() {
-        return viewport;
+        public void apply() {
+        viewport.apply();
     }
+
 }
