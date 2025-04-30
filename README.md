@@ -2,7 +2,7 @@
 
 A 2D Hack and Slash game developed using Java and the LibGDX framework. Players select a character, fight waves of enemies, earn points, and try to reach a target score to win. The game features database integration for storing player stats and a leaderboard.
  
-This Project is Vibe Coded.
+ 
 ## Features
 
 *   **Character Selection:** Choose from multiple character classes (Knight, Lightning Mage, Fire Wizard, Wanderer Mage, Samurai variants).
@@ -114,9 +114,6 @@ The `assets/` directory (typically located alongside `core`, or configured in Gr
 *   **Database:** Connection settings are in `core/src/main/java/com/has/mt/DatabaseManager.java` (see Setup section).
 *   **Game Settings:** Various game parameters (scores, speeds, health, etc.) can be tweaked in `core/src/main/java/com/has/mt/GameConfig.java`.
 *   **Assets:** Ensure all required assets (images, fonts, UI skin) are present in the correct structure within the `assets/` directory as expected by `AssetLoader.java`.
-
-## Demo Video
-
-[![Watch Demo](https://img.shields.io/badge/Watch-Demo-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=YOUR_YOUTUBE_VIDEO_ID)
+ 
 
 ## Assets were fetched from craftpix.net, all the credits for the sprite sheets and backgrounds go to their original creators and this is only for non commmerical demonstration and use.
